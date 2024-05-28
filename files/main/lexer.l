@@ -48,13 +48,13 @@ comp            { printf("Token KEYWORD_COMP:\t\t%s\n", yytext); return KW_COMP;
 endcomp         { printf("Token KEYWORD_ENDCOMP:\t\t%s\n", yytext); return KW_ENDCOMP;}
 of              { printf("Token KEYWORD_FOR:\t\t%s\n", yytext); return KW_OF;}
 
-/* special keywords */
+	/*special keywords*/
 {ID}            { printf("Token IDENTIFIER:\t\t%s\n", yytext); yylval.str = strdup(yytext); return IDENTIFIER;}
 {NUMBER}        { printf("Token CONST_INT:\t\t%s\n", yytext); yylval.str = strdup(yytext); return CONST_INT;}
 {REAL}          { printf("Token CONST_REAL:\t\t%s\n", yytext); yylval.str = strdup(yytext); return CONST_REAL;}
 {STRING}        { printf("Token CONST_STRING:\t\t%s\n", yytext); yylval.str = strdup(yytext); return CONST_STRING;}
 
-/* arithmetic operators */
+	/*arithmetic operators*/
 "+"             { printf("Token PLUS_OP:\t\t\t+\n"); return '+';}         	
 "-"             { printf("Token MINUS_OP:\t\t\t-\n"); return '-';}
 "*"             { printf("Token MULTIPLY_OP:\t\t*\n"); return '*';}
@@ -72,7 +72,7 @@ of              { printf("Token KEYWORD_FOR:\t\t%s\n", yytext); return KW_OF;}
 ">="            { printf("Token GREATER_EQUAL_OP:\t\t<=\n"); return GE_OP;}       
 		
 
-/* assignment operators */        
+	/*assignment operators*/        
 "="             { printf("Token ASSING_OP:\t\t\t==\n"); return '=';}
 "+=" 		    { printf("Token PLUS_ASSING_OP:\t\t\t==\n"); return OP1;}
 "-=" 		    { printf("Token MINUS_ASSING_OP:\t\t\t==\n"); return OP2;}
@@ -81,7 +81,7 @@ of              { printf("Token KEYWORD_FOR:\t\t%s\n", yytext); return KW_OF;}
 "*=" 		    { printf("Token MULT_ASSING_OP:\t\t\t==\n"); return OP5;}
 ":=" 		    { printf("Token S_ASSING_OP:\t\t\t==\n"); return OP6;}
 
-/* delimiters */
+	/*delimiters*/
 ";"             { printf("Token SEMICOLON:\t\t;\n"); return ';';}
 "("             { printf("Token LEFT_PARENTHESIS:\t\t(\n"); return '(';}
 ")"             { printf("Token RIGHT_PARENTHESIS:\t)\n"); return ')';}
@@ -90,14 +90,15 @@ of              { printf("Token KEYWORD_FOR:\t\t%s\n", yytext); return KW_OF;}
 "]"             { printf("Token RIGHT_BRACKET:\t\t]\n"); return ']';}
 ":"             { printf("Token LEFT_CURLY_BRACKET:\t{\n"); return ':';}
 "."             { printf("Token RIGHT_CURLY_BRACKET:\t}\n"); return '.';}
-/* signle line comments */
+
+	/*signle line comments*/
 "--"            [^\n]*
 
 
-/*  House keeping stuff */
+	/*House keeping stuff*/
 
-[ \r\t]			/* skip whitespace */
-\n 			    ++line_num;     /* add an extra line when you see \n*/
+[ \r\t]			/*skip whitespace*/
+\n 			    ++line_num;     /*add an extra line when you see \n*/
 .               { printf("Line %d Lexical Error: Unrecognized literal %s\n", lineNum, yytext); }
 <<EOF>> 	    { printf("Reached end of file"); return EOF;}
 
