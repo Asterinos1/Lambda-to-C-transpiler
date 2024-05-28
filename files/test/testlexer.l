@@ -9,7 +9,7 @@
 
 ID          [a-zA-Z][a-zA-Z0-9_]*
 DIGIT       [0-9]
-NUMBER      {DIGIT}+
+NUMBER      {DIGIT}{DIGIT}*
 DECIMAL     ("."{NUMBER})|({NUMBER}"."{NUMBER}?)
 REAL        {DECIMAL}([eE][+-]?{NUMBER})?
 
@@ -95,8 +95,7 @@ of              { printf("Token KEYWORD_OF:\t\t%s\n", yytext); }
 <comment>"*"+"/"        { BEGIN(INITIAL); }
 
 <<EOF>> 	    {return EOF;}
-
-[ \r\t]			/* skip whitespace */
+                [ \r\t]			/* skip whitespace */
 \n 			    ++line_num;     /* add an extra line when you see \n */
 .               { printf("Line %d Lexical Error: Unrecognized literal %s\n", line_num, yytext); }
 
