@@ -57,3 +57,17 @@ extern int yylex(void);
 %token NEQ_OP
 %token LE_OP
 %token GE_OP
+
+
+%%
+
+program:
+
+%%
+int main ()
+{
+   if ( yyparse() == 0 )
+		printf("//Accepted!\n");
+	else
+		printf("Rejected!\n");
+}
