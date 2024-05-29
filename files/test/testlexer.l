@@ -47,6 +47,9 @@ return          { printf("Token KEYWORD_RETURN:\t\t%s\n", yytext); }
 comp            { printf("Token KEYWORD_COMP:\t\t%s\n", yytext); }
 endcomp         { printf("Token KEYWORD_ENDCOMP:\t\t%s\n", yytext); }
 of              { printf("Token KEYWORD_OF:\t\t%s\n", yytext); }
+/*new here*/
+@defmacro       { printf("Token KETWORD_DEFMACRO:\t\t%s\n", yytext);}
+
 
 {ID}            { printf("Token IDENTIFIER:\t\t%s\n", yytext); }
 {NUMBER}        { printf("Token CONST_INT:\t\t%s\n", yytext); }
