@@ -20,6 +20,13 @@ extern int line_num;
 %token <str> CONST_REAL
 %token <str> CONST_STRING
 
+%token FN_readStr
+%token FN_readInt
+%token FN_readScalar
+%token FN_writeStr
+%token FN_writeInt
+%token FN_writeScalar
+
 %token KW_INT
 %token KW_SCALAR
 %token KW_STR
@@ -99,7 +106,7 @@ extern int line_num;
 %type <str> if_stmt
 %type <str> for_stmt
 %type <str> while_stmt
-%type <str> pi_func
+%type <str> la_func
 %type <str> smp_stmt cmp_stmt
 %type <str> function_call args
 
@@ -243,7 +250,7 @@ expr:
 | CONST_STRING                      { $$ = $1; }
 | IDENTIFIER                        { $$ = $1; }
 | function_call                     { $$ = $1; }
-| pi_func                           { $$ = $1; }
+| la_func                           { $$ = $1; }
 | KW_TRUE                           { $$ = "1"; }
 | KW_FALSE                          { $$ = "0"; }
 /*| KW_NIL			     { $$ = "NULL"; }*/
@@ -309,7 +316,7 @@ smp_stmt:
 | KW_CONTINUE ';'       { $$ = template("continue;"); }
 | KW_RETURN ';'         { $$ = template("return;"); }
 | KW_RETURN expr ';'    { $$ = template("return %s;", $2); }
-| pi_func ';'           { $$ = template("%s;", $1); }
+| la_func ';'           { $$ = template("%s;", $1); }
 | function_call ';'     { $$ = template("%s;", $1); }
 | for_stmt              { $$ = template("%s", $1); }
 | while_stmt            { $$ = template("%s", $1); }
@@ -335,14 +342,14 @@ assign_cmd:
 | IDENTIFIER '[' IDENTIFIER ']' ASSIGN expr { $$ = template("%s[%s] = %s", $1, $3, $6); }
 ;
 
-//Pi lang functions
-pi_func:
+//Lambda functions
+la_func:
   FN_readInt '(' ')'            { $$ = template("readInt()"); }
-| FN_readReal '(' ')'           { $$ = template("readReal()"); }
-| FN_readString '(' ')'         { $$ = template("readString()"); }
+| FN_readScalar '(' ')'           { $$ = template("readScalar()"); }
+| FN_readStr '(' ')'         { $$ = template("readStr()"); }
 | FN_writeInt '(' expr ')'      { $$ = template("writeInt(%s)", $3); }
-| FN_writeReal '(' expr ')'     { $$ = template("writeReal(%s)", $3); }
-| FN_writeString '(' expr ')'   { $$ = template("writeString(%s)", $3); }
+| FN_writeScalar '(' expr ')'     { $$ = template("writeScalar(%s)", $3); }
+| FN_writeStr '(' expr ')'   { $$ = template("writeStr(%s)", $3); }
 ;
 
 //Call own functions
@@ -358,14 +365,14 @@ args:
 
 //While statement
 while_stmt:
-  KW_WHILE '(' expr ')' smp_stmt            { $$ = template("while (%s)\n\t%s", $3, $5); }
+  KW_WHILE '(' expr ')' ':' smp_stmt KW_ENDWHILE';'           { $$ = template("while (%s)\n\t%s", $3, $5); }
 | KW_WHILE '(' expr ')' '{' cmp_stmt '}'    { $$ = template("while (%s) {\n%s\n}\n", $3, $6); }
 ;
 
 //If-else statement
 if_stmt:
-  KW_IF '(' expr ')' smp_stmt   { $$ = template("if (%s)\n\t%s\n", $3, $5); }
-| KW_IF '(' expr ')' smp_stmt KW_ELSE smp_stmt  {
+  KW_IF '(' expr ')' ':' smp_stmt KW_ENDIF ';'   { $$ = template("if (%s)\n\t%s\n", $3, $5); }
+| KW_IF '(' expr ')' smp_stmt KW_ELSE smp_stmt KW_ENDIF ';' {
     $$ = template("if (%s)\n\t%s\nelse\n\t%s\n", $3, $5, $7); }
 | KW_IF '(' expr ')' smp_stmt KW_ELSE '{' cmp_stmt '}' {
     $$ = template("if (%s)\n\t%s\nelse {\n%s\n}\n", $3, $5, $8); }
