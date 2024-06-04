@@ -52,6 +52,13 @@ false                   { printf("Token KEYWORD_FALSE:\t\t\t%s\n", yytext); }/**
 of                      { printf("Token KEYWORD_OF:\t\t\t%s\n", yytext); }/**/
 in                      { printf("Token KEYWORD_IN:\t\t\t%s\n", yytext); }/**/
 
+readString              { printf("Token FN_readStr:\t\t\t%s\n", yytext); } /*lambdafuncs*/
+readInteger                 { printf("Token FN_readInt:\t\t\t%s\n", yytext); }
+readReal                { printf("Token FN_readScalar:\t\t\t%s\n", yytext); }
+writeString             { printf("Token FN_writeStr:\t\t\t%s\n", yytext); }
+writeInteger                { printf("Token FN_writeInt:\t\t\t%s\n", yytext); }
+writeReal               { printf("Token FN_writeScalar:\t\t\t%s\n", yytext); }
+
 {ID}                    { printf("Token IDENTIFIER:\t\t\t%s\n", yytext);}
 {NUMBER}                { printf("Token CONST_INT:\t\t\t%s\n", yytext);}
 {REAL}                  { printf("Token CONST_REAL:\t\t\t%s\n", yytext);}
@@ -98,3 +105,5 @@ in                      { printf("Token KEYWORD_IN:\t\t\t%s\n", yytext); }/**/
 [ \r\t]+     /* skip whitespace */
 \n          ++lineNum;
 .           { printf("Line %d Lexical Error: Unrecognized literal %s\n", lineNum, yytext); }
+
+%%
