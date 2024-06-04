@@ -20,8 +20,6 @@ SPEC    ("\""|"\\"|"\r"|"\t"|"\n")
 PUNCT   ("-"|"+"|"*"|"/"|":"|"_"|"$"|"!"|"#"|"@"|"~"|"^"|"("|")"|",")
 STRING  ("\"")([a-zA-Z0-9]|" "|{SPEC}|{PUNCT})*("\"")
 
-%x comment
-
 %%
 
 int                     { printf("Token KEYWORD_INT:\t\t\t%s\n", yytext); }/**/
@@ -53,10 +51,10 @@ of                      { printf("Token KEYWORD_OF:\t\t\t%s\n", yytext); }/**/
 in                      { printf("Token KEYWORD_IN:\t\t\t%s\n", yytext); }/**/
 
 readString              { printf("Token FN_readStr:\t\t\t%s\n", yytext); } /*lambdafuncs*/
-readInteger                 { printf("Token FN_readInt:\t\t\t%s\n", yytext); }
+readInteger             { printf("Token FN_readInt:\t\t\t%s\n", yytext); }
 readReal                { printf("Token FN_readScalar:\t\t\t%s\n", yytext); }
 writeString             { printf("Token FN_writeStr:\t\t\t%s\n", yytext); }
-writeInteger                { printf("Token FN_writeInt:\t\t\t%s\n", yytext); }
+writeInteger            { printf("Token FN_writeInt:\t\t\t%s\n", yytext); }
 writeReal               { printf("Token FN_writeScalar:\t\t\t%s\n", yytext); }
 
 {ID}                    { printf("Token IDENTIFIER:\t\t\t%s\n", yytext);}
@@ -96,9 +94,7 @@ writeReal               { printf("Token FN_writeScalar:\t\t\t%s\n", yytext); }
 ":"                     { printf("Token COLON:\t\t\t:\n"); }
 "."                     { printf("Token PERIOD:\t\t\t.\n"); }
 
-"--"         {BEGIN(comment);}
-<comment>[^\n]*    /*Eat all one line comments*/
-<comment>\n {++lineNum;BEGIN(0);}
+"--"[^\n]*              /*line comments */
 
 <<EOF>> 	return EOF;
 
