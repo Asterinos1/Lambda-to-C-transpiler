@@ -52,6 +52,13 @@ false                   { printf("Token KEYWORD_FALSE:\t\t\t%s\n", yytext); retu
 of                      { printf("Token KEYWORD_OF:\t\t\t%s\n", yytext); return KW_OF; }/**/
 in                      { printf("Token KEYWORD_IN:\t\t\t%s\n", yytext); return KW_IN; }/**/
 
+readString              { printf("Token FN_readStr:\t\t\t%s\n", yytext); return FN_readStr; } /*lambdafuncs*/
+readInteger                 { printf("Token FN_readInt:\t\t\t%s\n", yytext); return FN_readInt; }
+readReal                { printf("Token FN_readScalar:\t\t\t%s\n", yytext); return FN_readScalar; }
+writeString             { printf("Token FN_writeStr:\t\t\t%s\n", yytext); return FN_writeStr; }
+writeInteger                { printf("Token FN_writeInt:\t\t\t%s\n", yytext); return FN_writeInt; }
+writeReal               { printf("Token FN_writeScalar:\t\t\t%s\n", yytext); return FN_writeScalar; }
+
 {ID}                    { printf("Token IDENTIFIER:\t\t\t%s\n", yytext); yylval.str = strdup(yytext); return IDENTIFIER; }
 {NUMBER}                { printf("Token CONST_INT:\t\t\t%s\n", yytext); yylval.str = strdup(yytext); return CONST_INT; }
 {REAL}                  { printf("Token CONST_REAL:\t\t\t%s\n", yytext); yylval.str = strdup(yytext); return CONST_REAL; }
