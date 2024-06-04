@@ -53,7 +53,7 @@ extern int line_num;
 %token KW_TRUE
 %token KW_FALSE
 %token KW_OF
-%token KW_I
+%token KW_IN
 
 /**%token POW_OP*/
 /*%token ASSIGN*/
@@ -121,52 +121,10 @@ program:
                     "#include <stdlib.h>\n"
                     "#include <string.h>\n"
                     "#include <math.h>\n"
-                    "#include \"pilib.h\"\n"
+                    "#include \"lambdalib.h\"\n"
                     "\n"); 
             printf("%s\n\n", $1);
             printf("int main() {\n%s\n} \n", $7);
-        } 
-    }
-|   KW_DEF KW_MAIN '(' ')' ':' body KW_ENDDEF {
-        if (yyerror_count == 0) {
-            // include the pilib.h file
-            printf("/* program */ \n\n");
-            printf("#include <stdio.h>\n"
-                    "#include <stdlib.h>\n"
-                    "#include <string.h>\n"
-                    "#include <math.h>\n"
-                    "#include \"pilib.h\"\n"
-                    "\n"); 
-            printf("\n\n");
-            printf("int main() {\n%s\n} \n", $6);
-        } 
-    }
-|   decl_list KW_DEF KW_MAIN '(' ')' ':' body KW_ENDDEF ';' {
-        if (yyerror_count == 0) {
-            // include the pilib.h file
-            printf("/* program */ \n\n");
-            printf("#include <stdio.h>\n"
-                    "#include <stdlib.h>\n"
-                    "#include <string.h>\n"
-                    "#include <math.h>\n"
-                    "#include \"pilib.h\"\n"
-                    "\n"); 
-            printf("%s\n\n", $1);
-            printf("int main() {\n%s\n} \n", $7);
-        } 
-    }
-|   KW_DEF KW_MAIN '(' ')' ':' body KW_ENDDEF ';' {
-        if (yyerror_count == 0) {
-            // include the pilib.h file
-            printf("/* program */ \n\n");
-            printf("#include <stdio.h>\n"
-                    "#include <stdlib.h>\n"
-                    "#include <string.h>\n"
-                    "#include <math.h>\n"
-                    "#include \"pilib.h\"\n"
-                    "\n"); 
-            printf("\n\n");
-            printf("int main() {\n%s\n} \n", $6);
         } 
     }
 ;
@@ -225,8 +183,8 @@ var_identifiers:
 ;
 
 var_decl:  
-  KW_VAR var_identifiers data_type ';'  { $$ = template("%s %s;", $3, $2); }
-| KW_VAR arr_identifiers '[' CONST_INT ']' basic_data_type ';'  {
+  var_identifiers':' data_type ';'  { $$ = template("%s %s;", $3, $2); }
+| arr_identifiers '[' CONST_INT ']' basic_data_type ';'  {
         char * ids = strtok($2, ", ");
         char * arrays = "";
 
@@ -253,7 +211,6 @@ expr:
 | la_func                           { $$ = $1; }
 | KW_TRUE                           { $$ = "1"; }
 | KW_FALSE                          { $$ = "0"; }
-/*| KW_NIL			     { $$ = "NULL"; }*/
 | '(' expr ')'                      { $$ = template("(%s)",  $2); }
 | '+' expr %prec SIGN_PLUS          { $$ = template("+%s",  $2); }
 | '-' expr %prec SIGN_MINUS         { $$ = template("-%s",  $2); } 
@@ -279,10 +236,7 @@ expr:
 /*====================== Functions ======================*/
 
 func_decl:
-KW_DEF IDENTIFIER '(' params ')' func_data_type '{' body '}' {
-      $$ = template("\n%s %s(%s) {\n%s\n}\n", $6, $2, $4, $8);
-  }
-| KW_DEF IDENTIFIER '(' params ')' func_data_type '{' body '}' ';' {
+KW_DEF IDENTIFIER '(' params ')' func_data_type ':' body KW_ENDDEF ';'{
       $$ = template("\n%s %s(%s) {\n%s\n}\n", $6, $2, $4, $8);
   }
 ;
@@ -294,14 +248,14 @@ func_data_type:
 
 params:
     %empty                          { $$ = ""; }
-| IDENTIFIER data_type              { $$ = template("%s %s", $2, $1); }
-| IDENTIFIER data_type ',' params   { $$ = template("%s %s, %s", $2, $1, $4); }
+| IDENTIFIER ':' data_type              { $$ = template("%s %s", $2, $1); }
+| IDENTIFIER ':' data_type ',' params   { $$ = template("%s %s, %s", $2, $1, $4); }
 ;
 
 body:
   smp_stmt          { $$ = $1; }
 | var_decl          { $$ = $1; }
-| const_decl          { $$ = $1; }
+| const_decl        { $$ = $1; }
 | body smp_stmt     { $$ = template("%s\n%s", $1, $2); }
 | body var_decl     { $$ = template("%s\n%s", $1, $2); }
 | body const_decl   { $$ = template("%s\n%s", $1, $2); }
@@ -365,35 +319,28 @@ args:
 
 //While statement
 while_stmt:
-  KW_WHILE '(' expr ')' ':' smp_stmt KW_ENDWHILE';'           { $$ = template("while (%s)\n\t%s", $3, $5); }
-| KW_WHILE '(' expr ')' '{' cmp_stmt '}'    { $$ = template("while (%s) {\n%s\n}\n", $3, $6); }
+  KW_WHILE '(' expr ')' ':' smp_stmt KW_ENDWHILE';'     { $$ = template("while (%s)\n\t%s", $3, $5); }
+| KW_WHILE '(' expr ')' ':' cmp_stmt  KW_ENDWHILE';'    { $$ = template("while (%s) {\n%s\n}\n", $3, $6); }
 ;
 
 //If-else statement
 if_stmt:
   KW_IF '(' expr ')' ':' smp_stmt KW_ENDIF ';'   { $$ = template("if (%s)\n\t%s\n", $3, $5); }
-| KW_IF '(' expr ')' smp_stmt KW_ELSE smp_stmt KW_ENDIF ';' {
-    $$ = template("if (%s)\n\t%s\nelse\n\t%s\n", $3, $5, $7); }
-| KW_IF '(' expr ')' smp_stmt KW_ELSE '{' cmp_stmt '}' {
-    $$ = template("if (%s)\n\t%s\nelse {\n%s\n}\n", $3, $5, $8); }
+| KW_IF '(' expr ')' smp_stmt KW_ELSE smp_stmt KW_ENDIF ';' { $$ = template("if (%s)\n\t%s\nelse\n\t%s\n", $3, $5, $7); }
+| KW_IF '(' expr ')' smp_stmt KW_ELSE '{' cmp_stmt '}' { $$ = template("if (%s)\n\t%s\nelse {\n%s\n}\n", $3, $5, $8); }
 | KW_IF '(' expr ')' '{' cmp_stmt '}'       { $$ = template("if (%s) {\n%s\n}\n", $3, $6); }
-| KW_IF '(' expr ')' '{' cmp_stmt '}' KW_ELSE smp_stmt  {
-    $$ = template("if (%s) {\n%s\n}\nelse\n\t%s\n", $3, $6, $9); }
-| KW_IF '(' expr ')' '{' cmp_stmt '}' KW_ELSE '{' cmp_stmt '}'  {
-    $$ = template("if (%s) {\n%s\n}\nelse {\n%s\n}\n", $3, $6, $10); }
+| KW_IF '(' expr ')' '{' cmp_stmt '}' KW_ELSE smp_stmt  { $$ = template("if (%s) {\n%s\n}\nelse\n\t%s\n", $3, $6, $9); }
+| KW_IF '(' expr ')' '{' cmp_stmt '}' KW_ELSE '{' cmp_stmt '}'  { $$ = template("if (%s) {\n%s\n}\nelse {\n%s\n}\n", $3, $6, $10); }
 ;
 
 //For statement
 for_stmt:
-  KW_FOR '(' assign_cmd ';' expr ';' assign_cmd ')' smp_stmt { 
-    $$ = template("for (%s; %s; %s)\n\t%s\n", $3, $5, $7, $9); }
-| KW_FOR '(' assign_cmd ';' ';' assign_cmd ')' smp_stmt { 
-    $$ = template("for (%s; ; %s)\n\t%s\n", $3, $6, $8); }
-| KW_FOR '(' assign_cmd ';' expr ';' assign_cmd ')' '{' cmp_stmt '}' { 
-    $$ = template("for (%s; %s; %s) {\n%s\n}\n", $3, $5, $7, $10); }
-| KW_FOR '(' assign_cmd ';' ';' assign_cmd ')' '{' cmp_stmt '}' { 
-    $$ = template("for (%s; ; %s) {\n%s\n}\n", $3, $6, $9); }
+  KW_FOR '(' assign_cmd ';' expr ';' assign_cmd ')' smp_stmt KW_ENDFOR';'{ $$ = template("for (%s; %s; %s)\n\t%s\n", $3, $5, $7, $9); }
+| KW_FOR '(' assign_cmd ';' ';' assign_cmd ')' smp_stmt KW_ENDFOR ';'{ $$ = template("for (%s; ; %s)\n\t%s\n", $3, $6, $8); }
+| KW_FOR '(' assign_cmd ';' expr ';' assign_cmd ')' '{' cmp_stmt KW_ENDFOR';' { $$ = template("for (%s; %s; %s) {\n%s\n}\n", $3, $5, $7, $10); }
+| KW_FOR '(' assign_cmd ';' ';' assign_cmd ')' '{' cmp_stmt KW_ENDFOR ';' { $$ = template("for (%s; ; %s) {\n%s\n}\n", $3, $6, $9); }
 ;
+
 
 %%
 int main () {
