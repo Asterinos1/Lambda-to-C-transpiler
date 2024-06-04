@@ -21,10 +21,10 @@ extern int line_num;
 %token <str> CONST_STRING
 
 %token FN_readStr
-%token FN_readInt
+%token FN_readInteger
 %token FN_readScalar
 %token FN_writeStr
-%token FN_writeInt
+%token FN_writeInteger
 %token FN_writeScalar
 
 %token KW_INT
@@ -344,10 +344,10 @@ assign_cmd:
 
 //Lambda functions
 la_func:
-  FN_readInt '(' ')'            { $$ = template("readInt()"); }
+  FN_readInteger '(' ')'            { $$ = template("readInt()"); }
 | FN_readScalar '(' ')'           { $$ = template("readScalar()"); }
 | FN_readStr '(' ')'         { $$ = template("readStr()"); }
-| FN_writeInt '(' expr ')'      { $$ = template("writeInt(%s)", $3); }
+| FN_writeInteger '(' expr ')'      { $$ = template("writeInt(%s)", $3); }
 | FN_writeScalar '(' expr ')'     { $$ = template("writeScalar(%s)", $3); }
 | FN_writeStr '(' expr ')'   { $$ = template("writeStr(%s)", $3); }
 ;
