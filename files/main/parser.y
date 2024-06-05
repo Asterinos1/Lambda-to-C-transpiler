@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <string.h>		
 #include "cgen.h"
-#include "pilib.h"
+#include "lambdalib.h"
 
 extern int yylex(void);
 extern int line_num;
@@ -113,7 +113,7 @@ extern int line_num;
 %%
 
 program: 
-    decl_list KW_DEF KW_MAIN '(' ')' ':' body KW_ENDDEF {
+    decl_list KW_DEF KW_MAIN '(' ')' ':' body KW_ENDDEF';' {
         if (yyerror_count == 0) {
             // include the pilib.h file
             printf("/* program */ \n\n");
@@ -137,7 +137,7 @@ data_type:
 | basic_data_type           { $$ = $1; }
 ;
 
-basic_data_type:
+basic_data_type: /*need to include comp*/
   KW_INT    { $$ = template("%s", "int"); }
 | KW_SCALAR   { $$ = template("%s", "double"); }
 | KW_STR { $$ = template("%s", "char*"); }
@@ -183,21 +183,21 @@ var_identifiers:
 ;
 
 var_decl:  
-  var_identifiers':' data_type ';'  { $$ = template("%s %s;", $3, $2); }
+  var_identifiers ':' data_type ';'  { $$ = template("%s %s;", $3, $1); }
 | arr_identifiers '[' CONST_INT ']' basic_data_type ';'  {
-        char * ids = strtok($2, ", ");
-        char * arrays = "";
+    char * ids = strtok($1, ", ");
+    char * arrays = NULL;
 
-        arrays = template("%s[%s]", ids, $4);
+    arrays = template("%s[%s]", ids, $3);
+    ids = strtok(NULL, ", ");
+
+    while (ids != NULL) {
+        arrays = template("%s, %s[%s]", arrays, ids, $3);
         ids = strtok(NULL, ", ");
+    }
 
-        while (ids != NULL) {
-            arrays = template("%s, %s[%s]", arrays, ids, $4);
-            ids = strtok(NULL, ", ");
-        }
-
-        $$ = template("%s %s;", $6, arrays);
-    }    
+    $$ = template("%s %s;", $5, arrays);
+}
 ;
 
 /*====================== Expressions ======================*/
@@ -248,8 +248,8 @@ func_data_type:
 
 params:
     %empty                          { $$ = ""; }
-| IDENTIFIER ':' data_type              { $$ = template("%s %s", $2, $1); }
-| IDENTIFIER ':' data_type ',' params   { $$ = template("%s %s, %s", $2, $1, $4); }
+| IDENTIFIER ':' data_type              { $$ = template("%s %s", $3, $1); }
+| IDENTIFIER ':' data_type ',' params   { $$ = template("%s %s, %s", $3, $1, $5); }
 ;
 
 body:
@@ -292,9 +292,10 @@ cmp_stmt:
 //Assignment
 assign_cmd:
   IDENTIFIER ASSIGN expr { $$ = template("%s = %s", $1, $3); }
-| IDENTIFIER '[' CONST_INT ']' ASSIGN expr { $$ = template("%s[%s] = %s", $1, $3, $6); }
-| IDENTIFIER '[' IDENTIFIER ']' ASSIGN expr { $$ = template("%s[%s] = %s", $1, $3, $6); }
+| IDENTIFIER '[' CONST_INT ']' ASSIGN ':' expr { $$ = template("%s[%s] = %s", $1, $3, $7); }
+| IDENTIFIER '[' IDENTIFIER ']' ASSIGN ':' expr { $$ = template("%s[%s] = %s", $1, $3, $7); }
 ;
+
 
 //Lambda functions
 la_func:
@@ -319,13 +320,13 @@ args:
 
 //While statement
 while_stmt:
-  KW_WHILE '(' expr ')' ':' smp_stmt KW_ENDWHILE';'     { $$ = template("while (%s)\n\t%s", $3, $5); }
+  KW_WHILE '(' expr ')' ':' smp_stmt KW_ENDWHILE';'     { $$ = template("while (%s)\n\t%s", $3, $6); }
 | KW_WHILE '(' expr ')' ':' cmp_stmt  KW_ENDWHILE';'    { $$ = template("while (%s) {\n%s\n}\n", $3, $6); }
 ;
 
 //If-else statement
 if_stmt:
-  KW_IF '(' expr ')' ':' smp_stmt KW_ENDIF ';'   { $$ = template("if (%s)\n\t%s\n", $3, $5); }
+  KW_IF '(' expr ')' ':' smp_stmt KW_ENDIF ';'   { $$ = template("if (%s)\n\t%s\n", $3, $6); }
 | KW_IF '(' expr ')' smp_stmt KW_ELSE smp_stmt KW_ENDIF ';' { $$ = template("if (%s)\n\t%s\nelse\n\t%s\n", $3, $5, $7); }
 | KW_IF '(' expr ')' smp_stmt KW_ELSE '{' cmp_stmt '}' { $$ = template("if (%s)\n\t%s\nelse {\n%s\n}\n", $3, $5, $8); }
 | KW_IF '(' expr ')' '{' cmp_stmt '}'       { $$ = template("if (%s) {\n%s\n}\n", $3, $6); }
@@ -341,6 +342,12 @@ for_stmt:
 | KW_FOR '(' assign_cmd ';' ';' assign_cmd ')' '{' cmp_stmt KW_ENDFOR ';' { $$ = template("for (%s; ; %s) {\n%s\n}\n", $3, $6, $9); }
 ;
 
+//for_stmt2:
+//  KW_FOR IDENTIFIER KW_IN '[' expr ':' expr ']' ':' cmp_stmt KW_ENDFOR ';' { $$ = template("for (int %s = %s; %s <= %s; %s++) {\n%s\n}", $2->str, $5, $2->str, $7, $2->str, $10); }
+//| KW_FOR IDENTIFIER KW_IN '[' expr ':' expr ':' expr ']' ':' cmp_stmt KW_ENDFOR ';' { $$ = template("for (int %s = %s; %s <= %s; %s += %s) {\n%s\n}", $2->str, $5, $2->str, $7, $2->str, $9, $12); }
+//| KW_FOR IDENTIFIER KW_IN '[' expr ':' expr ']' ':' smp_stmt KW_ENDFOR ';' { $$ = template("for (int %s = %s; %s <= %s; %s++) {\n%s\n}", $2->str, $5, $2->str, $7, $2->str, $10); }
+//| KW_FOR IDENTIFIER KW_IN '[' expr ':' expr ':' expr ']' ':' smp_stmt KW_ENDFOR ';' { $$ = template("for (int %s = %s; %s <= %s; %s += %s) {\n%s\n}", $2->str, $5, $2->str, $7, $2->str, $9, $12);}
+//;
 
 %%
 int main () {
