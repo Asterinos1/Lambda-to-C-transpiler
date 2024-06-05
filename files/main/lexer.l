@@ -6,7 +6,7 @@
     #include "myanalyzer.tab.h"
     #include "cgen.h"
 
-    int lineNum = 1;
+    int line_num = 1;
 %}
 
 ID      [a-zA-Z][a-zA-Z0-9_]*
@@ -23,7 +23,7 @@ STRING  ("\"")([a-zA-Z0-9]|" "|{SPEC}|{PUNCT})*("\"")
 
 %%
 
-int                     { printf("Token KEYWORD_INT:\t\t\t%s\n", yytext); return KW_INT; }/**/
+integer                     { printf("Token KEYWORD_INT:\t\t\t%s\n", yytext); return KW_INT; }/**/
 scalar                  { printf("Token KEYWORD_SCALAR:\t\t\t%s\n", yytext); return KW_SCALAR; }/*NEW*/
 str                     { printf("Token KEYWORD_STRING:\t\t\t%s\n", yytext); return KW_STR; }/*NEW*/
 bool                    { printf("Token KEYWORD_BOOL:\t\t\t%s\n", yytext); return KW_BOOL; }/**/
@@ -52,10 +52,10 @@ of                      { printf("Token KEYWORD_OF:\t\t\t%s\n", yytext); return 
 in                      { printf("Token KEYWORD_IN:\t\t\t%s\n", yytext); return KW_IN; }/**/
 
 readString              { printf("Token FN_readStr:\t\t\t%s\n", yytext); return FN_readStr; } /*lambdafuncs*/
-readInteger             { printf("Token FN_readInt:\t\t\t%s\n", yytext); return FN_readInt; }
+readInteger             { printf("Token FN_readInteger:\t\t\t%s\n", yytext); return FN_readInteger; }
 readReal                { printf("Token FN_readScalar:\t\t\t%s\n", yytext); return FN_readScalar; }
 writeString             { printf("Token FN_writeStr:\t\t\t%s\n", yytext); return FN_writeStr; }
-writeInteger            { printf("Token FN_writeInt:\t\t\t%s\n", yytext); return FN_writeInt; }
+writeInteger            { printf("Token FN_writeInteger:\t\t\t%s\n", yytext); return FN_writeInteger; }
 writeReal               { printf("Token FN_writeScalar:\t\t\t%s\n", yytext); return FN_writeScalar; }
 
 {ID}                    { printf("Token IDENTIFIER:\t\t\t%s\n", yytext); yylval.str = strdup(yytext); return IDENTIFIER; }
@@ -100,5 +100,5 @@ writeReal               { printf("Token FN_writeScalar:\t\t\t%s\n", yytext); ret
 <<EOF>>                 { return EOF; }
 
 [ \r\t]+                /* skip whitespace */
-\n                      { ++lineNum; }
-.                       { printf("Line %d Lexical Error: Unrecognized literal %s\n", lineNum, yytext); }
+\n                      { ++line_num; }
+.                       { printf("Line %d Lexical Error: Unrecognized literal %s\n", line_num, yytext); }
