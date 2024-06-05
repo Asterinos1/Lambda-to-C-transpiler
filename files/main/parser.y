@@ -127,6 +127,20 @@ program:
             printf("int main() {\n%s\n} \n", $7);
         } 
     }
+| KW_DEF KW_MAIN '(' ')' ':' body KW_ENDDEF';' {
+        if (yyerror_count == 0) {
+            // include the pilib.h file
+            printf("/* program */ \n\n");
+            printf("#include <stdio.h>\n"
+                    "#include <stdlib.h>\n"
+                    "#include <string.h>\n"
+                    "#include <math.h>\n"
+                    "#include \"lambdalib.h\"\n"
+                    "\n"); 
+            printf("\n\n");
+            printf("int main() {\n%s\n} \n", $6);
+        } 
+    }    
 ;
 
 /*====================== Declarations ======================*/
@@ -253,7 +267,8 @@ params:
 ;
 
 body:
-  smp_stmt          { $$ = $1; }
+  %empty { $$ = ""; }
+| smp_stmt          { $$ = $1; }
 | var_decl          { $$ = $1; }
 | const_decl        { $$ = $1; }
 | body smp_stmt     { $$ = template("%s\n%s", $1, $2); }
