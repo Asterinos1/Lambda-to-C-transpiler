@@ -327,9 +327,9 @@ assign_cmd:
 | IDENTIFIER OP5 expr { $$ = template("%s *= %s", $1, $3); }
 | IDENTIFIER '[' CONST_INT ']' OP5  expr { $$ = template("%s[%s] *= %s", $1, $3, $6); }
 | IDENTIFIER '[' IDENTIFIER ']' OP5  expr { $$ = template("%s[%s] *= %s", $1, $3, $6); }
-| IDENTIFIER OP6 expr { $$ = template("%s := %s", $1, $3); }
+/* | IDENTIFIER OP6 expr { $$ = template("%s := %s", $1, $3); }
 | IDENTIFIER '[' CONST_INT ']' OP6  expr { $$ = template("%s[%s] := %s", $1, $3, $6); }
-| IDENTIFIER '[' IDENTIFIER ']' OP6  expr { $$ = template("%s[%s] := %s", $1, $3, $6); }
+| IDENTIFIER '[' IDENTIFIER ']' OP6  expr { $$ = template("%s[%s] := %s", $1, $3, $6); } */
 ;
 
 //Lambda functions
