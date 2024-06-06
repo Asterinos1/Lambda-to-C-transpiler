@@ -360,18 +360,18 @@ if_stmt:
 
 
 //For statement
-for_stmt:
+/* for_stmt:
   KW_FOR '(' assign_cmd ';' expr ';' assign_cmd ')' smp_stmt KW_ENDFOR';'{ $$ = template("for (%s; %s; %s)\n\t%s\n", $3, $5, $7, $9); }
 | KW_FOR '(' assign_cmd ';' ';' assign_cmd ')' smp_stmt KW_ENDFOR ';'{ $$ = template("for (%s; ; %s)\n\t%s\n", $3, $6, $8); }
 | KW_FOR '(' assign_cmd ';' expr ';' assign_cmd ')' '{' cmp_stmt KW_ENDFOR';' { $$ = template("for (%s; %s; %s) {\n%s\n}\n", $3, $5, $7, $10); }
 | KW_FOR '(' assign_cmd ';' ';' assign_cmd ')' '{' cmp_stmt KW_ENDFOR ';' { $$ = template("for (%s; ; %s) {\n%s\n}\n", $3, $6, $9); }
-;
+; */
 
-for_stmt2:
-  KW_FOR IDENTIFIER KW_IN '[' CONST_INT ':' CONST_INT ']' ':' cmp_stmt KW_ENDFOR ';' { $$ = template("for (int %s = %s; %s <= %s; %s++) {\n%s\n}", $2->str, $5, $2->str, $7, $2->str, $10); }
-| KW_FOR IDENTIFIER KW_IN '[' CONST_INT ':' CONST_INT ':' CONST_INT ']' ':' cmp_stmt KW_ENDFOR ';' { $$ = template("for (int %s = %s; %s <= %s; %s += %s) {\n%s\n}", $2->str, $5, $2->str, $7, $2->str, $9, $12); }
-| KW_FOR IDENTIFIER KW_IN '[' CONST_INT ':' CONST_INT ']' ':' smp_stmt KW_ENDFOR ';' { $$ = template("for (int %s = %s; %s <= %s; %s++) {\n%s\n}", $2->str, $5, $2->str, $7, $2->str, $10); }
-| KW_FOR IDENTIFIER KW_IN '[' CONST_INT ':' CONST_INT ':' CONST_INT ']' ':' smp_stmt KW_ENDFOR ';' { $$ = template("for (int %s = %s; %s <= %s; %s += %s) {\n%s\n}", $2->str, $5, $2->str, $7, $2->str, $9, $12);}
+for_stmt:
+  KW_FOR IDENTIFIER KW_IN '[' CONST_INT ':' CONST_INT ']' ':' cmp_stmt KW_ENDFOR ';' { $$ = template("for (int %s = %s; %s <= %s; %s++) {\n%s\n}", $2, $5, $2, $7, $2, $10); }
+| KW_FOR IDENTIFIER KW_IN '[' CONST_INT ':' CONST_INT ':' CONST_INT ']' ':' cmp_stmt KW_ENDFOR ';' { $$ = template("for (int %s = %s; %s <= %s; %s += %s) {\n%s\n}", $2, $5, $2, $7, $2, $9, $12); }
+| KW_FOR IDENTIFIER KW_IN '[' CONST_INT ':' CONST_INT ']' ':' smp_stmt KW_ENDFOR ';' { $$ = template("for (int %s = %s; %s <= %s; %s++) {\n%s\n}", $2, $5, $2, $7, $2, $10); }
+| KW_FOR IDENTIFIER KW_IN '[' CONST_INT ':' CONST_INT ':' CONST_INT ']' ':' smp_stmt KW_ENDFOR ';' { $$ = template("for (int %s = %s; %s <= %s; %s += %s) {\n%s\n}", $2, $5, $2, $7, $2, $9, $12);}
 ;
 
 %%
