@@ -110,6 +110,9 @@ extern int line_num;
 %type <str> smp_stmt cmp_stmt
 %type <str> function_call args
 
+/*new*/ 
+%type <str> for_stmt2
+
 %%
 
 program: 
@@ -250,8 +253,8 @@ expr:
 /*====================== Functions ======================*/
 
 func_decl:
-KW_DEF IDENTIFIER '(' params ')' func_data_type ':' body KW_ENDDEF ';'{
-      $$ = template("\n%s %s(%s) {\n%s\n}\n", $6, $2, $4, $8);
+KW_DEF IDENTIFIER '(' params ')' '-''>' func_data_type ':' body KW_ENDDEF ';'{
+      $$ = template("\n%s %s(%s) {\n%s\n}\n", $8, $2, $4, $10);
   }
 ;
 
@@ -266,9 +269,8 @@ params:
 | IDENTIFIER ':' data_type ',' params   { $$ = template("%s %s, %s", $3, $1, $5); }
 ;
 
-body:
-  %empty { $$ = ""; }
-| smp_stmt          { $$ = $1; }
+body:  
+ smp_stmt          { $$ = $1; }
 | var_decl          { $$ = $1; }
 | const_decl        { $$ = $1; }
 | body smp_stmt     { $$ = template("%s\n%s", $1, $2); }
@@ -335,19 +337,27 @@ args:
 
 //While statement
 while_stmt:
-  KW_WHILE '(' expr ')' ':' smp_stmt KW_ENDWHILE';'     { $$ = template("while (%s)\n\t%s", $3, $6); }
+ // KW_WHILE '(' expr ')' ':' smp_stmt KW_ENDWHILE';'     { $$ = template("while (%s)\n\t%s", $3, $6); }
+ KW_WHILE '(' expr ')' ':' smp_stmt  KW_ENDWHILE';'    { $$ = template("while (%s) {\n%s\n}\n", $3, $6); }
 | KW_WHILE '(' expr ')' ':' cmp_stmt  KW_ENDWHILE';'    { $$ = template("while (%s) {\n%s\n}\n", $3, $6); }
 ;
 
 //If-else statement
-if_stmt:
+/* if_stmt:
   KW_IF '(' expr ')' ':' smp_stmt KW_ENDIF ';'   { $$ = template("if (%s)\n\t%s\n", $3, $6); }
 | KW_IF '(' expr ')' smp_stmt KW_ELSE smp_stmt KW_ENDIF ';' { $$ = template("if (%s)\n\t%s\nelse\n\t%s\n", $3, $5, $7); }
 | KW_IF '(' expr ')' smp_stmt KW_ELSE '{' cmp_stmt '}' { $$ = template("if (%s)\n\t%s\nelse {\n%s\n}\n", $3, $5, $8); }
 | KW_IF '(' expr ')' '{' cmp_stmt '}'       { $$ = template("if (%s) {\n%s\n}\n", $3, $6); }
 | KW_IF '(' expr ')' '{' cmp_stmt '}' KW_ELSE smp_stmt  { $$ = template("if (%s) {\n%s\n}\nelse\n\t%s\n", $3, $6, $9); }
 | KW_IF '(' expr ')' '{' cmp_stmt '}' KW_ELSE '{' cmp_stmt '}'  { $$ = template("if (%s) {\n%s\n}\nelse {\n%s\n}\n", $3, $6, $10); }
+; */
+
+//If-else statement
+if_stmt:
+  KW_IF '(' expr ')' ':' cmp_stmt KW_ENDIF       { $$ = template("if (%s) {\n%s\n}\n", $3, $6); }
+| KW_IF '(' expr ')' ':' cmp_stmt  KW_ELSE ':' cmp_stmt KW_ENDIF  { $$ = template("if (%s) {\n%s\n}\nelse {\n%s\n}\n", $3, $6, $9); }
 ;
+
 
 //For statement
 for_stmt:
@@ -357,12 +367,12 @@ for_stmt:
 | KW_FOR '(' assign_cmd ';' ';' assign_cmd ')' '{' cmp_stmt KW_ENDFOR ';' { $$ = template("for (%s; ; %s) {\n%s\n}\n", $3, $6, $9); }
 ;
 
-//for_stmt2:
-//  KW_FOR IDENTIFIER KW_IN '[' expr ':' expr ']' ':' cmp_stmt KW_ENDFOR ';' { $$ = template("for (int %s = %s; %s <= %s; %s++) {\n%s\n}", $2->str, $5, $2->str, $7, $2->str, $10); }
-//| KW_FOR IDENTIFIER KW_IN '[' expr ':' expr ':' expr ']' ':' cmp_stmt KW_ENDFOR ';' { $$ = template("for (int %s = %s; %s <= %s; %s += %s) {\n%s\n}", $2->str, $5, $2->str, $7, $2->str, $9, $12); }
-//| KW_FOR IDENTIFIER KW_IN '[' expr ':' expr ']' ':' smp_stmt KW_ENDFOR ';' { $$ = template("for (int %s = %s; %s <= %s; %s++) {\n%s\n}", $2->str, $5, $2->str, $7, $2->str, $10); }
-//| KW_FOR IDENTIFIER KW_IN '[' expr ':' expr ':' expr ']' ':' smp_stmt KW_ENDFOR ';' { $$ = template("for (int %s = %s; %s <= %s; %s += %s) {\n%s\n}", $2->str, $5, $2->str, $7, $2->str, $9, $12);}
-//;
+for_stmt2:
+  KW_FOR IDENTIFIER KW_IN '[' CONST_INT ':' CONST_INT ']' ':' cmp_stmt KW_ENDFOR ';' { $$ = template("for (int %s = %s; %s <= %s; %s++) {\n%s\n}", $2->str, $5, $2->str, $7, $2->str, $10); }
+| KW_FOR IDENTIFIER KW_IN '[' CONST_INT ':' CONST_INT ':' CONST_INT ']' ':' cmp_stmt KW_ENDFOR ';' { $$ = template("for (int %s = %s; %s <= %s; %s += %s) {\n%s\n}", $2->str, $5, $2->str, $7, $2->str, $9, $12); }
+| KW_FOR IDENTIFIER KW_IN '[' CONST_INT ':' CONST_INT ']' ':' smp_stmt KW_ENDFOR ';' { $$ = template("for (int %s = %s; %s <= %s; %s++) {\n%s\n}", $2->str, $5, $2->str, $7, $2->str, $10); }
+| KW_FOR IDENTIFIER KW_IN '[' CONST_INT ':' CONST_INT ':' CONST_INT ']' ':' smp_stmt KW_ENDFOR ';' { $$ = template("for (int %s = %s; %s <= %s; %s += %s) {\n%s\n}", $2->str, $5, $2->str, $7, $2->str, $9, $12);}
+;
 
 %%
 int main () {
