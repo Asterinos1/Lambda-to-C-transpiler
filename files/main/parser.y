@@ -316,10 +316,10 @@ assign_cmd:
 
 //Lambda functions
 la_func:
-  FN_readInteger '(' ')'            { $$ = template("readInt()"); }
+  FN_readInteger '(' ')'            { $$ = template("readInteger()"); }
 | FN_readScalar '(' ')'           { $$ = template("readScalar()"); }
 | FN_readStr '(' ')'         { $$ = template("readStr()"); }
-| FN_writeInteger '(' expr ')'      { $$ = template("writeInt(%s)", $3); }
+| FN_writeInteger '(' expr ')'      { $$ = template("writeInteger(%s)", $3); }
 | FN_writeScalar '(' expr ')'     { $$ = template("writeScalar(%s)", $3); }
 | FN_writeStr '(' expr ')'   { $$ = template("writeStr(%s)", $3); }
 ;
@@ -376,6 +376,9 @@ for_stmt2:
 
 %%
 int main () {
-  if ( yyparse() != 0 )
+  if ( yyparse() != 0 ){
     printf("\nRejected!\n");
+  }else{
+    printf("\nYour program is syntactically correct!");
+  }
 }
