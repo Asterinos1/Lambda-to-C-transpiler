@@ -310,8 +310,25 @@ assign_cmd:
   IDENTIFIER ASSIGN expr { $$ = template("%s = %s", $1, $3); }
 | IDENTIFIER '[' CONST_INT ']' ASSIGN ':' expr { $$ = template("%s[%s] = %s", $1, $3, $7); }
 | IDENTIFIER '[' IDENTIFIER ']' ASSIGN ':' expr { $$ = template("%s[%s] = %s", $1, $3, $7); }
+| IDENTIFIER OP1 expr { $$ = template("%s += %s", $1, $3); }
+| IDENTIFIER '[' CONST_INT ']' OP1 ':' expr { $$ = template("%s[%s] += %s", $1, $3, $7); }
+| IDENTIFIER '[' IDENTIFIER ']' OP1 ':' expr { $$ = template("%s[%s] += %s", $1, $3, $7); }
+| IDENTIFIER OP2 expr { $$ = template("%s -= %s", $1, $3); }
+| IDENTIFIER '[' CONST_INT ']' OP2 ':' expr { $$ = template("%s[%s] -= %s", $1, $3, $7); }
+| IDENTIFIER '[' IDENTIFIER ']' OP2 ':' expr { $$ = template("%s[%s] -= %s", $1, $3, $7); }
+| IDENTIFIER OP3 expr { $$ = template("%s /= %s", $1, $3); }
+| IDENTIFIER '[' CONST_INT ']' OP3 ':' expr { $$ = template("%s[%s] /= %s", $1, $3, $7); }
+| IDENTIFIER '[' IDENTIFIER ']' OP3 ':' expr { $$ = template("%s[%s] /= %s", $1, $3, $7); }
+| IDENTIFIER OP4 expr { $$ = template("%s %%= %s", $1, $3); }
+| IDENTIFIER '[' CONST_INT ']' OP4 ':' expr { $$ = template("%s[%s] %%= %s", $1, $3, $7); }
+| IDENTIFIER '[' IDENTIFIER ']' OP4 ':' expr { $$ = template("%s[%s] %%= %s", $1, $3, $7); }
+| IDENTIFIER OP5 expr { $$ = template("%s *= %s", $1, $3); }
+| IDENTIFIER '[' CONST_INT ']' OP5 ':' expr { $$ = template("%s[%s] *= %s", $1, $3, $7); }
+| IDENTIFIER '[' IDENTIFIER ']' OP5 ':' expr { $$ = template("%s[%s] *= %s", $1, $3, $7); }
+| IDENTIFIER OP6 expr { $$ = template("%s := %s", $1, $3); }
+| IDENTIFIER '[' CONST_INT ']' OP6 ':' expr { $$ = template("%s[%s] := %s", $1, $3, $7); }
+| IDENTIFIER '[' IDENTIFIER ']' OP6 ':' expr { $$ = template("%s[%s] := %s", $1, $3, $7); }
 ;
-
 
 //Lambda functions
 la_func:
