@@ -17,7 +17,7 @@ DECIMAL ("."{NUMBER})|({NUMBER}("."{NUMBER}?)?)
 REAL    {DECIMAL}([eE][+-]?{NUMBER})?
 
 SPEC    ("\""|"\\"|"\r"|"\t"|"\n")
-PUNCT   ("-"|"+"|"*"|"/"|":"|"_"|"$"|"!"|"#"|"@"|"~"|"^"|"("|")"|",")
+PUNCT   ("-"|"+"|"*"|"/"|":"|"_"|"$"|"!"|"#"|"@"|"~"|"^"|"("|")"|","|"'")
 STRING  ("\"")([a-zA-Z0-9]|" "|{SPEC}|{PUNCT})*("\"")
 
 
@@ -53,10 +53,12 @@ in                      { printf("Token KEYWORD_IN:\t\t\t%s\n", yytext); return 
 
 readString              { printf("Token FN_readStr:\t\t\t%s\n", yytext); return FN_readStr; } /*lambdafuncs*/
 readInteger             { printf("Token FN_readInteger:\t\t\t%s\n", yytext); return FN_readInteger; }
-readReal                { printf("Token FN_readScalar:\t\t\t%s\n", yytext); return FN_readScalar; }
+readScalar              { printf("Token FN_readScalar:\t\t\t%s\n", yytext); return FN_readScalar; }
 writeString             { printf("Token FN_writeStr:\t\t\t%s\n", yytext); return FN_writeStr; }
 writeInteger            { printf("Token FN_writeInteger:\t\t\t%s\n", yytext); return FN_writeInteger; }
-writeReal               { printf("Token FN_writeScalar:\t\t\t%s\n", yytext); return FN_writeScalar; }
+writeScalar             { printf("Token FN_writeScalar:\t\t\t%s\n", yytext); return FN_writeScalar; }
+write                   { printf("Token FN_write:\t\t\t%s\n", yytext); return FN_write; }
+
 
 {ID}                    { printf("Token IDENTIFIER:\t\t\t%s\n", yytext); yylval.str = strdup(yytext); return IDENTIFIER; }
 {NUMBER}                { printf("Token CONST_INT:\t\t\t%s\n", yytext); yylval.str = strdup(yytext); return CONST_INT; }
