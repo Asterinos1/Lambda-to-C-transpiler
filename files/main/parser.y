@@ -26,6 +26,7 @@ extern int line_num;
 %token FN_writeStr
 %token FN_writeInteger
 %token FN_writeScalar
+%token FN_write
 
 %token KW_INT
 %token KW_SCALAR
@@ -174,8 +175,8 @@ decl:
 
 //Constant Declarations
 const_decl:  
-    KW_CONST const_identifiers basic_data_type ';' {
-        $$ = template("const %s %s;", $3, $2); 
+    KW_CONST const_identifiers ':' basic_data_type ';' {
+        $$ = template("const %s %s;", $4, $2); 
     }
 ;
 
@@ -199,7 +200,7 @@ var_identifiers:
 
 var_decl:  
   var_identifiers ':' data_type ';'  { $$ = template("%s %s;", $3, $1); }
-| arr_identifiers '[' CONST_INT ']' basic_data_type ';'  {
+| arr_identifiers '[' CONST_INT ']'':'basic_data_type ';'  {
     char * ids = strtok($1, ", ");
     char * arrays = NULL;
 
@@ -211,7 +212,7 @@ var_decl:
         ids = strtok(NULL, ", ");
     }
 
-    $$ = template("%s %s;", $5, arrays);
+    $$ = template("%s %s;", $6, arrays);
 }
 ;
 
@@ -305,29 +306,30 @@ cmp_stmt:
 | const_decl            { $$ = $1; }
 ;
 
+
 //Assignment
 assign_cmd:
   IDENTIFIER ASSIGN expr { $$ = template("%s = %s", $1, $3); }
-| IDENTIFIER '[' CONST_INT ']' ASSIGN ':' expr { $$ = template("%s[%s] = %s", $1, $3, $7); }
-| IDENTIFIER '[' IDENTIFIER ']' ASSIGN ':' expr { $$ = template("%s[%s] = %s", $1, $3, $7); }
+| IDENTIFIER '[' CONST_INT ']' ASSIGN  expr { $$ = template("%s[%s] = %s", $1, $3, $6); }
+| IDENTIFIER '[' IDENTIFIER ']' ASSIGN  expr { $$ = template("%s[%s] = %s", $1, $3, $6); }
 | IDENTIFIER OP1 expr { $$ = template("%s += %s", $1, $3); }
-| IDENTIFIER '[' CONST_INT ']' OP1 ':' expr { $$ = template("%s[%s] += %s", $1, $3, $7); }
-| IDENTIFIER '[' IDENTIFIER ']' OP1 ':' expr { $$ = template("%s[%s] += %s", $1, $3, $7); }
+| IDENTIFIER '[' CONST_INT ']' OP1  expr { $$ = template("%s[%s] += %s", $1, $3, $6); }
+| IDENTIFIER '[' IDENTIFIER ']' OP1  expr { $$ = template("%s[%s] += %s", $1, $3, $6); }
 | IDENTIFIER OP2 expr { $$ = template("%s -= %s", $1, $3); }
-| IDENTIFIER '[' CONST_INT ']' OP2 ':' expr { $$ = template("%s[%s] -= %s", $1, $3, $7); }
-| IDENTIFIER '[' IDENTIFIER ']' OP2 ':' expr { $$ = template("%s[%s] -= %s", $1, $3, $7); }
+| IDENTIFIER '[' CONST_INT ']' OP2  expr { $$ = template("%s[%s] -= %s", $1, $3, $6); }
+| IDENTIFIER '[' IDENTIFIER ']' OP2  expr { $$ = template("%s[%s] -= %s", $1, $3, $6); }
 | IDENTIFIER OP3 expr { $$ = template("%s /= %s", $1, $3); }
-| IDENTIFIER '[' CONST_INT ']' OP3 ':' expr { $$ = template("%s[%s] /= %s", $1, $3, $7); }
-| IDENTIFIER '[' IDENTIFIER ']' OP3 ':' expr { $$ = template("%s[%s] /= %s", $1, $3, $7); }
+| IDENTIFIER '[' CONST_INT ']' OP3  expr { $$ = template("%s[%s] /= %s", $1, $3, $6); }
+| IDENTIFIER '[' IDENTIFIER ']' OP3  expr { $$ = template("%s[%s] /= %s", $1, $3, $6); }
 | IDENTIFIER OP4 expr { $$ = template("%s %%= %s", $1, $3); }
-| IDENTIFIER '[' CONST_INT ']' OP4 ':' expr { $$ = template("%s[%s] %%= %s", $1, $3, $7); }
-| IDENTIFIER '[' IDENTIFIER ']' OP4 ':' expr { $$ = template("%s[%s] %%= %s", $1, $3, $7); }
+| IDENTIFIER '[' CONST_INT ']' OP4  expr { $$ = template("%s[%s] %%= %s", $1, $3, $6); }
+| IDENTIFIER '[' IDENTIFIER ']' OP4  expr { $$ = template("%s[%s] %%= %s", $1, $3, $6); }
 | IDENTIFIER OP5 expr { $$ = template("%s *= %s", $1, $3); }
-| IDENTIFIER '[' CONST_INT ']' OP5 ':' expr { $$ = template("%s[%s] *= %s", $1, $3, $7); }
-| IDENTIFIER '[' IDENTIFIER ']' OP5 ':' expr { $$ = template("%s[%s] *= %s", $1, $3, $7); }
+| IDENTIFIER '[' CONST_INT ']' OP5  expr { $$ = template("%s[%s] *= %s", $1, $3, $6); }
+| IDENTIFIER '[' IDENTIFIER ']' OP5  expr { $$ = template("%s[%s] *= %s", $1, $3, $6); }
 | IDENTIFIER OP6 expr { $$ = template("%s := %s", $1, $3); }
-| IDENTIFIER '[' CONST_INT ']' OP6 ':' expr { $$ = template("%s[%s] := %s", $1, $3, $7); }
-| IDENTIFIER '[' IDENTIFIER ']' OP6 ':' expr { $$ = template("%s[%s] := %s", $1, $3, $7); }
+| IDENTIFIER '[' CONST_INT ']' OP6  expr { $$ = template("%s[%s] := %s", $1, $3, $6); }
+| IDENTIFIER '[' IDENTIFIER ']' OP6  expr { $$ = template("%s[%s] := %s", $1, $3, $6); }
 ;
 
 //Lambda functions
@@ -338,6 +340,7 @@ la_func:
 | FN_writeInteger '(' expr ')'      { $$ = template("writeInteger(%s)", $3); }
 | FN_writeScalar '(' expr ')'     { $$ = template("writeScalar(%s)", $3); }
 | FN_writeStr '(' expr ')'   { $$ = template("writeStr(%s)", $3); }
+| FN_write '(' expr ')'   { $$ = template("write(%s)", $3); }
 ;
 
 //Call own functions
@@ -384,10 +387,10 @@ if_stmt:
 ; */
 
 for_stmt:
-  KW_FOR IDENTIFIER KW_IN '[' CONST_INT ':' CONST_INT ']' ':' cmp_stmt KW_ENDFOR ';' { $$ = template("for (int %s = %s; %s <= %s; %s++) {\n%s\n}", $2, $5, $2, $7, $2, $10); }
-| KW_FOR IDENTIFIER KW_IN '[' CONST_INT ':' CONST_INT ':' CONST_INT ']' ':' cmp_stmt KW_ENDFOR ';' { $$ = template("for (int %s = %s; %s <= %s; %s += %s) {\n%s\n}", $2, $5, $2, $7, $2, $9, $12); }
-| KW_FOR IDENTIFIER KW_IN '[' CONST_INT ':' CONST_INT ']' ':' smp_stmt KW_ENDFOR ';' { $$ = template("for (int %s = %s; %s <= %s; %s++) {\n%s\n}", $2, $5, $2, $7, $2, $10); }
-| KW_FOR IDENTIFIER KW_IN '[' CONST_INT ':' CONST_INT ':' CONST_INT ']' ':' smp_stmt KW_ENDFOR ';' { $$ = template("for (int %s = %s; %s <= %s; %s += %s) {\n%s\n}", $2, $5, $2, $7, $2, $9, $12);}
+  KW_FOR IDENTIFIER KW_IN '[' expr ':' expr ']' ':' cmp_stmt KW_ENDFOR ';' { $$ = template("for (int %s = %s; %s <= %s; %s++) {\n%s\n}", $2, $5, $2, $7, $2, $10); }
+| KW_FOR IDENTIFIER KW_IN '[' expr ':' expr ':' expr ']' ':' cmp_stmt KW_ENDFOR ';' { $$ = template("for (int %s = %s; %s <= %s; %s += %s) {\n%s\n}", $2, $5, $2, $7, $2, $9, $12); }
+| KW_FOR IDENTIFIER KW_IN '[' expr ':' expr ']' ':' smp_stmt KW_ENDFOR ';' { $$ = template("for (int %s = %s; %s <= %s; %s++) {\n%s\n}", $2, $5, $2, $7, $2, $10); }
+| KW_FOR IDENTIFIER KW_IN '[' expr ':' expr ':' expr ']' ':' smp_stmt KW_ENDFOR ';' { $$ = template("for (int %s = %s; %s <= %s; %s += %s) {\n%s\n}", $2, $5, $2, $7, $2, $9, $12);}
 ;
 
 %%
