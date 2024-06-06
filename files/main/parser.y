@@ -110,8 +110,6 @@ extern int line_num;
 %type <str> smp_stmt cmp_stmt
 %type <str> function_call args
 
-/*new*/ 
-%type <str> for_stmt2
 
 %%
 
@@ -253,7 +251,7 @@ expr:
 /*====================== Functions ======================*/
 
 func_decl:
-KW_DEF IDENTIFIER '(' params ')' '-''>' func_data_type ':' body KW_ENDDEF ';'{
+KW_DEF IDENTIFIER '(' params ')' '-''>' func_data_type ':' body KW_ENDDEF';'{
       $$ = template("\n%s %s(%s) {\n%s\n}\n", $8, $2, $4, $10);
   }
 ;
@@ -270,7 +268,8 @@ params:
 ;
 
 body:  
- smp_stmt          { $$ = $1; }
+ %empty          { $$ = ""; }
+| smp_stmt          { $$ = $1; }
 | var_decl          { $$ = $1; }
 | const_decl        { $$ = $1; }
 | body smp_stmt     { $$ = template("%s\n%s", $1, $2); }
@@ -379,6 +378,6 @@ int main () {
   if ( yyparse() != 0 ){
     printf("\nRejected!\n");
   }else{
-    printf("\nYour program is syntactically correct!");
+    printf("\n/* Your program is syntactically correct! */\n");
   }
 }
