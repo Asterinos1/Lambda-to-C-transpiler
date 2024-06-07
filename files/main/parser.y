@@ -96,7 +96,7 @@ extern int line_num;
 %type <str> decl_list decl
 %type <str> const_decl var_decl 
 %type <str> basic_data_type data_type
-%type <str> var_identifiers const_identifiers arr_identifiers
+%type <str> var_identifiers const_identifiers
 
 //expressions
 %type <str> expr
@@ -113,6 +113,9 @@ extern int line_num;
 %type <str> la_func
 %type <str> smp_stmt cmp_stmt
 %type <str> function_call args
+
+//NEW
+%type <str> arr_decl arr_decl_list
 
 //NEW FOR COMP
 %type <str> comp_body comp_decl comp_var_decl comp_func_decl
@@ -211,40 +214,46 @@ comp_var_decl:
     }
 ;
 
+
 const_identifiers:
   assign_cmd                          { $$ = $1; }
 | const_identifiers ',' assign_cmd    { $$ = template("%s, %s", $1, $3); }
 ;
 
-//Variable Declarations
-arr_identifiers:
-  IDENTIFIER                        { $$ = $1; }
-| arr_identifiers ',' IDENTIFIER    { $$ = template("%s, %s", $1, $3); }
-;
-
-var_identifiers:
-  arr_identifiers                          { $$ = $1; }
-| var_identifiers ',' arr_identifiers      { $$ = template("%s, %s", $1, $3); }
-| IDENTIFIER '=' expr                      { $$ = template("%s = %s", $1, $3); }
-| IDENTIFIER '=' expr ',' var_identifiers  { $$ = template("%s, %s", $1, $3); }
-;
-
-var_decl:  
-  var_identifiers ':' data_type ';'  { $$ = template("%s %s;", $3, $1); }
-| arr_identifiers '[' CONST_INT ']'':'basic_data_type ';'  {
-    char * ids = strtok($1, ", ");
-    char * arrays = NULL;
-
-    arrays = template("%s[%s]", ids, $3);
-    ids = strtok(NULL, ", ");
-
-    while (ids != NULL) {
-        arrays = template("%s, %s[%s]", arrays, ids, $3);
-        ids = strtok(NULL, ", ");
+/* Variable Declarations */
+var_decl:
+    var_identifiers ':' data_type ';' {
+        $$ = template("%s %s;", $3, $1);
     }
+| arr_decl_list ':' data_type ';' {
+        $$ = template("%s %s;", $3, $1);
+    }
+;
 
-    $$ = template("%s %s;", $6, arrays);
-}
+/* Identifiers for variables */
+var_identifiers:
+    IDENTIFIER {
+        $$ = $1;
+    }
+| var_identifiers ',' IDENTIFIER {
+        $$ = template("%s, %s", $1, $3);
+    }
+;
+
+/* Array Declarations */
+arr_decl_list:
+    arr_decl {
+        $$ = $1;
+    }
+| arr_decl_list ',' arr_decl {
+        $$ = template("%s, %s", $1, $3);
+    }
+;
+
+arr_decl:
+    IDENTIFIER '[' CONST_INT ']' {
+        $$ = template("%s[%s]", $1, $3);
+    }
 ;
 //MAJOR CONFLICT CONTRIBUTOR///
 /*====================== Expressions ======================*/
