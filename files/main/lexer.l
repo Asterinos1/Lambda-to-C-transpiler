@@ -22,10 +22,11 @@ STRING  ("\"")([a-zA-Z0-9]|" "|{SPEC}|{PUNCT})*("\"")
 
 
 %%
-
-integer                     { printf("Token KEYWORD_INT:\t\t\t%s\n", yytext); return KW_INT; }/**/
+int                     { printf("Token KEYWORD_INT2:\t\t\t%s\n", yytext); return KW_INT; }/**/
+integer                 { printf("Token KEYWORD_INT:\t\t\t%s\n", yytext); return KW_INT; }/**/
 scalar                  { printf("Token KEYWORD_SCALAR:\t\t\t%s\n", yytext); return KW_SCALAR; }/*NEW*/
 str                     { printf("Token KEYWORD_STRING:\t\t\t%s\n", yytext); return KW_STR; }/*NEW*/
+string                  { printf("Token KEYWORD_STRING2:\t\t\t%s\n", yytext); return KW_STR; }/*NEW*/
 bool                    { printf("Token KEYWORD_BOOL:\t\t\t%s\n", yytext); return KW_BOOL; }/**/
 const                   { printf("Token KEYWORD_CONST:\t\t\t%s\n", yytext); return KW_CONST; }/**/
 if                      { printf("Token KEYWORD_IF:\t\t\t%s\n", yytext); return KW_IF; }/**/
