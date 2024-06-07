@@ -119,6 +119,7 @@ extern int line_num;
 
 //NEW FOR COMP
 %type <str> comp_body comp_decl comp_var_decl comp_func_decl
+%type <str> comp_var_identifiers comp_arr_decl comp_arr_decl_list
 
 %%
 
@@ -191,15 +192,12 @@ comp_decl:
     ;
 
 comp_body:
-    comp_body comp_var_decl { $$ = template("%s\n%s", $1, $2); }
-    | comp_body comp_func_decl { $$ = template("%s\n%s", $1, $2); }
-    | comp_var_decl { $$ = $1; }
-    | comp_func_decl { $$ = $1; }
-    ;
+  comp_body comp_var_decl { $$ = template("%s\n%s", $1, $2); }
+| comp_body comp_func_decl { $$ = template("%s\n%s", $1, $2); }
+| comp_var_decl { $$ = $1; }
+| comp_func_decl { $$ = $1; }
+;
     
-//NEW
-
-
 //Constant Declarations
 const_decl:  
     KW_CONST const_identifiers ':' basic_data_type ';' {
@@ -207,13 +205,41 @@ const_decl:
     }
 ;
 
+/*COMP  Variable Declarations */
 comp_var_decl:
-    '#' IDENTIFIER ':' data_type ';' { $$ = template("%s %s;", $4, $2); }
-    | '#' IDENTIFIER '[' CONST_INT ']' ':' basic_data_type ';' {
-        $$ = template("%s %s[%s];", $7, $2, $4);
+    comp_var_identifiers ':' data_type ';' {
+        $$ = template("%s %s;", $3, $1);
+    }
+| comp_arr_decl_list ':' data_type ';' {
+        $$ = template("%s %s;", $3, $1);
     }
 ;
 
+/* Identifiers for variables */
+comp_var_identifiers:
+    '#' IDENTIFIER {
+        $$ = $2;
+    }
+| comp_var_identifiers ',' '#' IDENTIFIER {
+        $$ = template("%s, %s", $1, $4);
+    }
+;
+
+/* Array Declarations */
+comp_arr_decl_list:
+    comp_arr_decl {
+        $$ = $1;
+    }
+| comp_arr_decl_list ',' comp_arr_decl {
+        $$ = template("%s, %s", $1, $3);
+    }
+;
+
+comp_arr_decl:
+    '#' IDENTIFIER '[' CONST_INT ']' {
+        $$ = template("%s[%s]", $2, $4);
+    }
+;
 
 const_identifiers:
   assign_cmd                          { $$ = $1; }
@@ -255,6 +281,8 @@ arr_decl:
         $$ = template("%s[%s]", $1, $3);
     }
 ;
+
+
 //MAJOR CONFLICT CONTRIBUTOR///
 /*====================== Expressions ======================*/
 
