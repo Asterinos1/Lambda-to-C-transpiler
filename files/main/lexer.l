@@ -46,10 +46,12 @@ and                     { printf("Token KEYWORD_AND:\t\t\t%s\n", yytext); return
 or                      { printf("Token KEYWORD_OR:\t\t\t%s\n", yytext); return KW_OR; }/**/
 not                     { printf("Token KEYWORD_NOT:\t\t\t%s\n", yytext); return KW_NOT; }/**/
 return                  { printf("Token KEYWORD_RETURN:\t\t\t%s\n", yytext); return KW_RETURN; }/**/
-true                    { printf("Token KEYWORD_TRUE:\t\t\t%s\n", yytext); return KW_TRUE; }/**/
-false                   { printf("Token KEYWORD_FALSE:\t\t\t%s\n", yytext); return KW_FALSE; }/**/
+True                    { printf("Token KEYWORD_TRUE:\t\t\t%s\n", yytext); return KW_TRUE; }/**/
+False                   { printf("Token KEYWORD_FALSE:\t\t\t%s\n", yytext); return KW_FALSE; }/**/
 of                      { printf("Token KEYWORD_OF:\t\t\t%s\n", yytext); return KW_OF; }/**/
 in                      { printf("Token KEYWORD_IN:\t\t\t%s\n", yytext); return KW_IN; }/**/
+void                    { printf("Token KEYWORD_VOID:\t\t\t%s\n", yytext); return KW_VOID; }/**/
+
 
 readString              { printf("Token FN_readStr:\t\t\t%s\n", yytext); return FN_readStr; } /*lambdafuncs*/
 readInteger             { printf("Token FN_readInteger:\t\t\t%s\n", yytext); return FN_readInteger; }
@@ -96,6 +98,8 @@ write                   { printf("Token FN_write:\t\t\t%s\n", yytext); return FN
 "]"                     { printf("Token RIGHT_BRACKET:\t\t]\n"); return ']'; }
 ":"                     { printf("Token COLON:\t\t\t:\n"); return ':'; }
 "."                     { printf("Token PERIOD:\t\t\t.\n"); return '.'; }
+
+"#"                     { printf("Token DIESI:\t\t\t+\n"); return '#'; } /*NEW*/
 
 "--"[^\n]*              /* eat line comments */
 
