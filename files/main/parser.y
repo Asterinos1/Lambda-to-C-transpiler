@@ -56,6 +56,9 @@ extern int line_num;
 %token KW_OF
 %token KW_IN
 
+//NEW//
+%token KW_VOID
+
 /**%token POW_OP*/
 /*%token ASSIGN*/
 %token OP1
@@ -111,6 +114,8 @@ extern int line_num;
 %type <str> smp_stmt cmp_stmt
 %type <str> function_call args
 
+//NEW FOR COMP
+%type <str> comp_body comp_decl comp_var_decl comp_func_decl
 
 %%
 
@@ -154,10 +159,11 @@ data_type:
 ;
 
 basic_data_type: /*need to include comp*/
-  KW_INT    { $$ = template("%s", "int"); }
+  KW_INT      { $$ = template("%s", "int"); }
 | KW_SCALAR   { $$ = template("%s", "double"); }
-| KW_STR { $$ = template("%s", "char*"); }
-| KW_BOOL   { $$ = template("%s", "int"); }
+| KW_STR      { $$ = template("%s", "char*"); }
+| KW_BOOL     { $$ = template("%s", "int"); }
+| KW_VOID     { $$ = template("%s", "void"); }
 ;
 
 //Declaration Schema
@@ -171,12 +177,37 @@ decl:
   const_decl    { $$ = $1; }
 | var_decl      { $$ = $1; }
 | func_decl     { $$ = $1; }
+| comp_decl     { $$ = $1;}
 ;
+
+//NEW
+comp_decl:
+    KW_COMP IDENTIFIER ':' comp_body KW_ENDCOMP ';' {
+        $$ = template("typedef struct %s {\n%s\n} %s;", $2, $4, $2);
+    }
+    ;
+
+comp_body:
+    comp_body comp_var_decl { $$ = template("%s\n%s", $1, $2); }
+    | comp_body comp_func_decl { $$ = template("%s\n%s", $1, $2); }
+    | comp_var_decl { $$ = $1; }
+    | comp_func_decl { $$ = $1; }
+    ;
+    
+//NEW
+
 
 //Constant Declarations
 const_decl:  
     KW_CONST const_identifiers ':' basic_data_type ';' {
         $$ = template("const %s %s;", $4, $2); 
+    }
+;
+
+comp_var_decl:
+    '#' IDENTIFIER ':' data_type ';' { $$ = template("%s %s;", $4, $2); }
+    | '#' IDENTIFIER '[' CONST_INT ']' ':' basic_data_type ';' {
+        $$ = template("%s %s[%s];", $7, $2, $4);
     }
 ;
 
@@ -215,7 +246,7 @@ var_decl:
     $$ = template("%s %s;", $6, arrays);
 }
 ;
-
+//MAJOR CONFLICT CONTRIBUTOR///
 /*====================== Expressions ======================*/
 
 expr:
@@ -250,27 +281,30 @@ expr:
 ;
 
 /*====================== Functions ======================*/
-
 func_decl:
-KW_DEF IDENTIFIER '(' params ')' '-''>' func_data_type ':' body KW_ENDDEF';'{
-      $$ = template("\n%s %s(%s) {\n%s\n}\n", $8, $2, $4, $10);
-  }
+  KW_DEF IDENTIFIER '(' params ')' func_data_type ':' body KW_ENDDEF';'{ $$ = template("\n%s %s(%s) {\n%s\n}\n", $6, $2, $4, $8);}
+;
+
+comp_func_decl:
+  KW_DEF IDENTIFIER '(' params ')' func_data_type ':' body KW_ENDDEF';'
+  { $$ = template("\n%s (*%s); \n", $6, $2, $4, $8);}
 ;
 
 func_data_type:
   %empty    { $$ = template("void"); }
-| data_type { $$ = $1; }
+| '-''>' data_type { $$ = template("%s", $3); }
 ;
 
 params:
-    %empty                          { $$ = ""; }
+  %empty                            { $$ = ""; }
 | IDENTIFIER ':' data_type              { $$ = template("%s %s", $3, $1); }
 | IDENTIFIER ':' data_type ',' params   { $$ = template("%s %s, %s", $3, $1, $5); }
+| IDENTIFIER '['']'':' data_type              { $$ = template("%s* %s", $5, $1); }
+| IDENTIFIER '['']'':' data_type ',' params   { $$ = template("%s* %s, %s", $5, $1, $7); }
 ;
 
 body:  
- %empty          { $$ = ""; }
-| smp_stmt          { $$ = $1; }
+  smp_stmt          { $$ = $1; }
 | var_decl          { $$ = $1; }
 | const_decl        { $$ = $1; }
 | body smp_stmt     { $$ = template("%s\n%s", $1, $2); }
@@ -297,6 +331,7 @@ smp_stmt:
 | if_stmt ';'           { $$ = template("%s", $1); }
 ;
 
+
 cmp_stmt:
   cmp_stmt  smp_stmt    { $$ = template("%s\n%s", $1, $2); }
 | smp_stmt              { $$ = $1; }
@@ -305,6 +340,7 @@ cmp_stmt:
 | cmp_stmt  const_decl  { $$ = template("%s\n%s", $1, $2); }
 | const_decl            { $$ = $1; }
 ;
+
 
 
 //Assignment
@@ -337,6 +373,9 @@ la_func:
   FN_readInteger '(' ')'            { $$ = template("readInteger()"); }
 | FN_readScalar '(' ')'           { $$ = template("readScalar()"); }
 | FN_readStr '(' ')'         { $$ = template("readStr()"); }
+| FN_readInteger '(' expr')'            { $$ = template("readInteger(%s)", $3); }
+| FN_readScalar '('expr ')'           { $$ = template("readScalar(%s)", $3); }
+| FN_readStr '(' expr')'         { $$ = template("readStr(%s)", $3); }
 | FN_writeInteger '(' expr ')'      { $$ = template("writeInteger(%s)", $3); }
 | FN_writeScalar '(' expr ')'     { $$ = template("writeScalar(%s)", $3); }
 | FN_writeStr '(' expr ')'   { $$ = template("writeStr(%s)", $3); }
@@ -373,8 +412,8 @@ while_stmt:
 
 //If-else statement
 if_stmt:
-  KW_IF '(' expr ')' ':' cmp_stmt KW_ENDIF       { $$ = template("if (%s) {\n%s\n}\n", $3, $6); }
-| KW_IF '(' expr ')' ':' cmp_stmt  KW_ELSE ':' cmp_stmt KW_ENDIF  { $$ = template("if (%s) {\n%s\n}\nelse {\n%s\n}\n", $3, $6, $9); }
+  KW_IF '(' expr ')' ':' cmp_stmt KW_ENDIF ';'       { $$ = template("if (%s) {\n%s\n}\n", $3, $6); }
+| KW_IF '(' expr ')' ':' cmp_stmt  KW_ELSE ':' cmp_stmt KW_ENDIF ';'   { $$ = template("if (%s) {\n%s\n}\nelse {\n%s\n}\n", $3, $6, $9); }
 ;
 
 
@@ -396,7 +435,7 @@ for_stmt:
 %%
 int main () {
   if ( yyparse() != 0 ){
-    printf("\nRejected!\n");
+    printf("\nSyntax error\n");
   }else{
     printf("\n/* Your program is syntactically correct! */\n");
   }
