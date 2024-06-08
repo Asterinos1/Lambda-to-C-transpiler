@@ -8,6 +8,10 @@
 
 extern int yylex(void);
 extern int line_num;
+
+// Custom function for later use.
+void replace_string(char *str, const char *old, const char *new);
+
 %}
 
 %union
@@ -406,10 +410,17 @@ assign_cmd:
   $$ = template("%s* %s = (%s*)malloc(%s * sizeof(%s));\nfor (int %s = 0; %s < %s; ++%s) {\n%s[%s] = %s;\n}",
                 $11, $1, $11, $8, $11, $6, $6, $8, $6, $1, $6, $4);
     } 
-| IDENTIFIER OP6 '[' expr KW_FOR IDENTIFIER ':' data_type KW_IN IDENTIFIER KW_OF CONST_INT ']' ':' data_type {
+/* | IDENTIFIER OP6 '[' expr KW_FOR IDENTIFIER ':' data_type KW_IN IDENTIFIER KW_OF CONST_INT ']' ':' data_type {
     $$ = template("%s* %s = (%s*)malloc(%s * sizeof(%s));\nfor (int %s_i = 0; %s_i < %s; ++%s_i) {\n%s[%s_i] = %s;\n}",
                   $15, $1, $15, $12, $15, $10, $10, $12, $10, $1, $10, template("%s[%s_i]", $10, $10));
-    }
+    } */
+| IDENTIFIER OP6 '[' expr KW_FOR IDENTIFIER ':' data_type KW_IN IDENTIFIER KW_OF CONST_INT ']' ':' data_type {
+    char temp_expr[1024];
+    snprintf(temp_expr, sizeof(temp_expr), "%s", $4);
+    replace_string(temp_expr, $6, template("%s[%s_i]", $10, $6));
+    $$ = template("%s* %s = (%s*)malloc(%s * sizeof(%s));\nfor (int %s_i = 0; %s_i < %s; ++%s_i) {\n%s[%s_i] = %s;\n}",
+                  $15, $1, $15, $12, $15, $6, $6, $12, $6, $1, $6, temp_expr);
+    }    
 ;
 
 //Lambda functions
@@ -477,6 +488,22 @@ for_stmt:
 ;
 
 %%
+// Implementation of replace_string function
+void replace_string(char *str, const char *old, const char *new) {
+    char buffer[1024];
+    char *p;
+
+    if(!(p = strstr(str, old))) return;
+
+    strncpy(buffer, str, p-str);
+    buffer[p-str] = '\0';
+
+    sprintf(buffer+(p-str), "%s%s", new, p+strlen(old));
+
+    strcpy(str, buffer);
+}
+
+
 int main () {
   if ( yyparse() != 0 ){
     printf("\nSyntax error\n");
