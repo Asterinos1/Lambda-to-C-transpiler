@@ -2,24 +2,69 @@
     #include <assert.h>
     #include <stdio.h>
     #include <string.h>
+    #include <stdlib.h>
     #include <math.h>
     #include "myanalyzer.tab.h"
     #include "cgen.h"
 
     int line_num = 1;
+
+    // Structure to store macros
+    typedef struct Macro {
+        char *identifier;
+        char *replacement;
+        struct Macro *next;
+    } Macro;
+
+    Macro *macro_list = NULL;
+
+    // Function to add a macro to the list
+    void add_macro(const char *identifier, const char *replacement) {
+        Macro *new_macro = (Macro *)malloc(sizeof(Macro));
+        new_macro->identifier = strdup(identifier);
+        new_macro->replacement = strdup(replacement);
+        new_macro->next = macro_list;
+        macro_list = new_macro;
+    }
+
+    // Function to get a macro replacement
+    const char *get_macro_replacement(const char *identifier) {
+        Macro *current = macro_list;
+        while (current) {
+            if (strcmp(current->identifier, identifier) == 0) {
+                return current->replacement;
+            }
+            current = current->next;
+        }
+        return NULL;
+    }
+
+    // Function to free the macro list
+    void free_macros() {
+        Macro *current = macro_list;
+        while (current) {
+            Macro *temp = current;
+            current = current->next;
+            free(temp->identifier);
+            free(temp->replacement);
+            free(temp);
+        }
+    }
 %}
+
+%x MACRO_DEF
 
 ID      [a-zA-Z][a-zA-Z0-9_]*
 DIGIT   [0-9]
 
-NUMBER  {DIGIT}{DIGIT}*
-DECIMAL ("."{NUMBER})|({NUMBER}("."{NUMBER}?)?)
+NUMBER  {DIGIT}+
+DECIMAL ("."{NUMBER})|({NUMBER}"."{NUMBER}?)
 REAL    {DECIMAL}([eE][+-]?{NUMBER})?
 
 SPEC    ("\""|"\\"|"\r"|"\t"|"\n")
 PUNCT   ("-"|"+"|"*"|"/"|":"|"_"|"$"|"!"|"#"|"@"|"~"|"^"|"("|")"|","|"'")
-STRING  ("\"")([a-zA-Z0-9]|" "|{SPEC}|{PUNCT})*("\"")
-
+ESCAPE  "\\"([abfnrtv\\"'])
+STRING  "\""([^\\"\n]|{ESCAPE})*("\"")
 
 %%
 int                     { printf("//Token KEYWORD_INT2:\t\t\t%s\n", yytext); return KW_INT; }/**/
@@ -53,7 +98,6 @@ of                      { printf("//Token KEYWORD_OF:\t\t\t%s\n", yytext); retur
 in                      { printf("//Token KEYWORD_IN:\t\t\t%s\n", yytext); return KW_IN; }/**/
 void                    { printf("//Token KEYWORD_VOID:\t\t\t%s\n", yytext); return KW_VOID; }/**/
 
-
 readString              { printf("//Token FN_readStr:\t\t\t%s\n", yytext); return FN_readStr; } /*lambdafuncs*/
 readInteger             { printf("//Token FN_readInteger:\t\t\t%s\n", yytext); return FN_readInteger; }
 readScalar              { printf("//Token FN_readScalar:\t\t\t%s\n", yytext); return FN_readScalar; }
@@ -62,8 +106,37 @@ writeInteger            { printf("//Token FN_writeInteger:\t\t\t%s\n", yytext); 
 writeScalar             { printf("//Token FN_writeScalar:\t\t\t%s\n", yytext); return FN_writeScalar; }
 write                   { printf("//Token FN_write:\t\t\t%s\n", yytext); return FN_write; }
 
+"@defmacro" {
+    BEGIN(MACRO_DEF);
+    yytext[0] = 0;  // Clear yytext to accumulate the full line
+} 
 
-{ID}                    { printf("//Token IDENTIFIER:\t\t\t%s\n", yytext); yylval.str = strdup(yytext); return IDENTIFIER; }
+<MACRO_DEF>[^\n]*\n {
+    char id[256];
+    char replacement[256];
+    if (sscanf(yytext, " %255s %255[^\n]", id, replacement) == 2) {
+        add_macro(id, replacement);
+        printf("//Macro defined: %s -> %s\n", id, replacement);
+        BEGIN(INITIAL);
+    } else {
+        printf("//Line %d Lexical Error: Invalid macro definition %s\n", line_num, yytext);
+        BEGIN(INITIAL);
+    }
+}
+
+{ID} {
+    const char *replacement = get_macro_replacement(yytext);
+    if (replacement) {
+        printf("//Token MACRO_REPLACEMENT:\t\t%s -> %s\n", yytext, replacement);
+        yylval.str = strdup(replacement);
+        return CONST_STRING;  // Use a suitable token type for macro replacements
+    } else {
+        printf("//Token IDENTIFIER:\t\t\t%s\n", yytext);
+        yylval.str = strdup(yytext);
+        return IDENTIFIER;
+    }
+}
+
 {NUMBER}                { printf("//Token CONST_INT:\t\t\t%s\n", yytext); yylval.str = strdup(yytext); return CONST_INT; }
 {REAL}                  { printf("//Token CONST_REAL:\t\t\t%s\n", yytext); yylval.str = strdup(yytext); return CONST_REAL; }
 {STRING}                { printf("//Token CONST_STRING:\t\t\t%s\n", yytext); yylval.str = strdup(yytext); return CONST_STRING; }
@@ -100,11 +173,11 @@ write                   { printf("//Token FN_write:\t\t\t%s\n", yytext); return 
 ":"                     { printf("//Token COLON:\t\t\t:\n"); return ':'; }
 "."                     { printf("//Token PERIOD:\t\t\t.\n"); return '.'; }
 
-"#"                     { printf("//Token DIESI:\t\t\t+\n"); return '#'; } /*NEW*/
+"#"                     { printf("//Token DIESI:\t\t\tdiesi\n"); return '#'; } /*NEW*/
 
 "--"[^\n]*              /* eat line comments */
 
-<<EOF>>                 { return EOF; }
+<<EOF>>                 { free_macros(); return EOF; }
 
 [ \r\t]+                /* skip whitespace */
 \n                      { ++line_num; }
