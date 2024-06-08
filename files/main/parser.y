@@ -400,9 +400,16 @@ assign_cmd:
 | IDENTIFIER OP5 expr { $$ = template("%s *= %s", $1, $3); }
 | IDENTIFIER '[' CONST_INT ']' OP5  expr { $$ = template("%s[%s] *= %s", $1, $3, $6); }
 | IDENTIFIER '[' IDENTIFIER ']' OP5  expr { $$ = template("%s[%s] *= %s", $1, $3, $6); }
-/* | IDENTIFIER OP6 expr { $$ = template("%s := %s", $1, $3); }
-| IDENTIFIER '[' CONST_INT ']' OP6  expr { $$ = template("%s[%s] := %s", $1, $3, $6); }
-| IDENTIFIER '[' IDENTIFIER ']' OP6  expr { $$ = template("%s[%s] := %s", $1, $3, $6); } */
+
+//TEMPORARY FOR :=
+| IDENTIFIER OP6 '[' expr KW_FOR IDENTIFIER ':' expr ']' ':' data_type {
+  $$ = template("%s* %s = (%s*)malloc(%s * sizeof(%s));\nfor (int %s = 0; %s < %s; ++%s) {\n%s[%s] = %s;\n}",
+                $11, $1, $11, $8, $11, $6, $6, $8, $6, $1, $6, $4);
+    } 
+| IDENTIFIER OP6 '[' expr KW_FOR IDENTIFIER ':' data_type KW_IN IDENTIFIER KW_OF CONST_INT ']' ':' data_type {
+    $$ = template("%s* %s = (%s*)malloc(%s * sizeof(%s));\nfor (int %s_i = 0; %s_i < %s; ++%s_i) {\n%s[%s_i] = %s;\n}",
+                  $15, $1, $15, $12, $15, $10, $10, $12, $10, $1, $10, template("%s[%s_i]", $10, $10));
+    }
 ;
 
 //Lambda functions
