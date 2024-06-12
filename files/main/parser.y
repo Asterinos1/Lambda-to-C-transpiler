@@ -9,7 +9,7 @@
 extern int yylex(void);
 extern int line_num;
 
-// Custom function for later use.
+// Declare replace_string function
 void replace_string(char *str, const char *old, const char *new);
 
 %}
@@ -81,6 +81,7 @@ void replace_string(char *str, const char *old, const char *new);
 %left '+' '-'
 %left '/' '*' '%' 
 %right POW_OP
+%left KW_AND KW_OR
 
 %left '(' ')'
 %left '[' ']'
@@ -120,10 +121,6 @@ void replace_string(char *str, const char *old, const char *new);
 
 //NEW
 %type <str> arr_decl arr_decl_list
-
-//NEW FOR COMP
-%type <str> comp_body comp_decl comp_var_decl comp_func_decl
-%type <str> comp_var_identifiers comp_arr_decl comp_arr_decl_list
 
 %%
 
@@ -169,7 +166,7 @@ data_type:
 basic_data_type: /*need to include comp*/
   KW_INT      { $$ = template("%s", "int"); }
 | KW_SCALAR   { $$ = template("%s", "double"); }
-| KW_STR      { $$ = template("%s", "char*"); }
+| KW_STR      { $$ = template("%s", "char* "); }
 | KW_BOOL     { $$ = template("%s", "int"); }
 | KW_VOID     { $$ = template("%s", "void"); }
 ;
@@ -185,63 +182,13 @@ decl:
   const_decl    { $$ = $1; }
 | var_decl      { $$ = $1; }
 | func_decl     { $$ = $1; }
-| comp_decl     { $$ = $1;}
 ;
 
-//NEW
-comp_decl:
-    KW_COMP IDENTIFIER ':' comp_body KW_ENDCOMP ';' {
-        $$ = template("typedef struct %s {\n%s\n} %s;", $2, $4, $2);
-    }
-    ;
-
-comp_body:
-  comp_body comp_var_decl { $$ = template("%s\n%s", $1, $2); }
-| comp_body comp_func_decl { $$ = template("%s\n%s", $1, $2); }
-| comp_var_decl { $$ = $1; }
-| comp_func_decl { $$ = $1; }
-;
     
 //Constant Declarations
 const_decl:  
     KW_CONST const_identifiers ':' basic_data_type ';' {
         $$ = template("const %s %s;", $4, $2); 
-    }
-;
-
-/*COMP  Variable Declarations */
-comp_var_decl:
-    comp_var_identifiers ':' data_type ';' {
-        $$ = template("%s %s;", $3, $1);
-    }
-| comp_arr_decl_list ':' data_type ';' {
-        $$ = template("%s %s;", $3, $1);
-    }
-;
-
-/* Identifiers for variables */
-comp_var_identifiers:
-    '#' IDENTIFIER {
-        $$ = $2;
-    }
-| comp_var_identifiers ',' '#' IDENTIFIER {
-        $$ = template("%s, %s", $1, $4);
-    }
-;
-
-/* Array Declarations */
-comp_arr_decl_list:
-    comp_arr_decl {
-        $$ = $1;
-    }
-| comp_arr_decl_list ',' comp_arr_decl {
-        $$ = template("%s, %s", $1, $3);
-    }
-;
-
-comp_arr_decl:
-    '#' IDENTIFIER '[' CONST_INT ']' {
-        $$ = template("%s[%s]", $2, $4);
     }
 ;
 
@@ -287,7 +234,6 @@ arr_decl:
 ;
 
 
-//MAJOR CONFLICT CONTRIBUTOR///
 /*====================== Expressions ======================*/
 
 expr:
@@ -324,11 +270,6 @@ expr:
 /*====================== Functions ======================*/
 func_decl:
   KW_DEF IDENTIFIER '(' params ')' func_data_type ':' body KW_ENDDEF';'{ $$ = template("\n%s %s(%s) {\n%s\n}\n", $6, $2, $4, $8);}
-;
-
-comp_func_decl:
-  KW_DEF IDENTIFIER '(' params ')' func_data_type ':' body KW_ENDDEF';'
-  { $$ = template("\n%s (*%s); \n", $6, $2, $4, $8);}
 ;
 
 func_data_type:
@@ -404,16 +345,10 @@ assign_cmd:
 | IDENTIFIER OP5 expr { $$ = template("%s *= %s", $1, $3); }
 | IDENTIFIER '[' CONST_INT ']' OP5  expr { $$ = template("%s[%s] *= %s", $1, $3, $6); }
 | IDENTIFIER '[' IDENTIFIER ']' OP5  expr { $$ = template("%s[%s] *= %s", $1, $3, $6); }
-
-//TEMPORARY FOR :=
 | IDENTIFIER OP6 '[' expr KW_FOR IDENTIFIER ':' expr ']' ':' data_type {
   $$ = template("%s* %s = (%s*)malloc(%s * sizeof(%s));\nfor (int %s = 0; %s < %s; ++%s) {\n%s[%s] = %s;\n}",
                 $11, $1, $11, $8, $11, $6, $6, $8, $6, $1, $6, $4);
     } 
-/* | IDENTIFIER OP6 '[' expr KW_FOR IDENTIFIER ':' data_type KW_IN IDENTIFIER KW_OF CONST_INT ']' ':' data_type {
-    $$ = template("%s* %s = (%s*)malloc(%s * sizeof(%s));\nfor (int %s_i = 0; %s_i < %s; ++%s_i) {\n%s[%s_i] = %s;\n}",
-                  $15, $1, $15, $12, $15, $10, $10, $12, $10, $1, $10, template("%s[%s_i]", $10, $10));
-    } */
 | IDENTIFIER OP6 '[' expr KW_FOR IDENTIFIER ':' data_type KW_IN IDENTIFIER KW_OF CONST_INT ']' ':' data_type {
     char temp_expr[1024];
     snprintf(temp_expr, sizeof(temp_expr), "%s", $4);
