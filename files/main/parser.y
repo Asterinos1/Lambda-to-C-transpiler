@@ -60,11 +60,8 @@ void replace_string(char *str, const char *old, const char *new);
 %token KW_OF
 %token KW_IN
 
-//NEW//
 %token KW_VOID
 
-/**%token POW_OP*/
-/*%token ASSIGN*/
 %token OP1
 %token OP2
 %token OP3
@@ -345,6 +342,7 @@ assign_cmd:
 | IDENTIFIER OP5 expr { $$ = template("%s *= %s", $1, $3); }
 | IDENTIFIER '[' CONST_INT ']' OP5  expr { $$ = template("%s[%s] *= %s", $1, $3, $6); }
 | IDENTIFIER '[' IDENTIFIER ']' OP5  expr { $$ = template("%s[%s] *= %s", $1, $3, $6); }
+
 | IDENTIFIER OP6 '[' expr KW_FOR IDENTIFIER ':' expr ']' ':' data_type {
   $$ = template("%s* %s = (%s*)malloc(%s * sizeof(%s));\nfor (int %s = 0; %s < %s; ++%s) {\n%s[%s] = %s;\n}",
                 $11, $1, $11, $8, $11, $6, $6, $8, $6, $1, $6, $4);
