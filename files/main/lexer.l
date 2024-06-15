@@ -56,47 +56,42 @@
 
 ID      [a-zA-Z][a-zA-Z0-9_]*
 DIGIT   [0-9]
-
 NUMBER  {DIGIT}+
 DECIMAL ("."{NUMBER})|({NUMBER}"."{NUMBER}?)
 SCALAR    {DECIMAL}([eE][+-]?{NUMBER})?
-
-SPEC    ("\""|"\\"|"\r"|"\t"|"\n")
-PUNCT   ("-"|"+"|"*"|"/"|":"|"_"|"$"|"!"|"#"|"@"|"~"|"^"|"("|")"|","|"'")
-ESCAPE  "\\"([abfnrtv\\"'])
-STRING  "\""([^\\"\n]|{ESCAPE})*("\"")
+STRING  \"[^\n&.]*\"
 
 %%
-int                     { printf("//Token KEYWORD_INT2:\t\t\t%s\n", yytext); return KW_INT; }/**/
-integer                 { printf("//Token KEYWORD_INT:\t\t\t%s\n", yytext); return KW_INT; }/**/
-scalar                  { printf("//Token KEYWORD_SCALAR:\t\t\t%s\n", yytext); return KW_SCALAR; }/*NEW*/
-str                     { printf("//Token KEYWORD_STRING:\t\t\t%s\n", yytext); return KW_STR; }/*NEW*/
-string                  { printf("//Token KEYWORD_STRING2:\t\t\t%s\n", yytext); return KW_STR; }/*NEW*/
-bool                    { printf("//Token KEYWORD_BOOL:\t\t\t%s\n", yytext); return KW_BOOL; }/**/
-const                   { printf("//Token KEYWORD_CONST:\t\t\t%s\n", yytext); return KW_CONST; }/**/
-if                      { printf("//Token KEYWORD_IF:\t\t\t%s\n", yytext); return KW_IF; }/**/
-endif                   { printf("//Token KEYWORD_ENDIF:\t\t\t%s\n", yytext); return KW_ENDIF; }/**/
-else                    { printf("//Token KEYWORD_ELSE:\t\t\t%s\n", yytext); return KW_ELSE; }/**/
-for                     { printf("//Token KEYWORD_FOR:\t\t\t%s\n", yytext); return KW_FOR; }/**/
-endfor                  { printf("//Token KEYWORD_ENDFOR:\t\t\t%s\n", yytext); return KW_ENDFOR; }/**/
-while                   { printf("//Token KEYWORD_WHILE:\t\t\t%s\n", yytext); return KW_WHILE; }/**/
-endwhile                { printf("//Token KEYWORD_ENDWHILE:\t\t\t%s\n", yytext); return KW_ENDWHILE; }/**/
-break                   { printf("//Token KEYWORD_BREAK:\t\t\t%s\n", yytext); return KW_BREAK; }/**/
-continue                { printf("//Token KEYWORD_CONTINUE:\t\t\t%s\n", yytext); return KW_CONTINUE; }/**/
-def                     { printf("//Token KEYWORD_DEF:\t\t\t%s\n", yytext); return KW_DEF; }/**/
-enddef                  { printf("//Token KEYWORD_ENDDEF:\t\t\t%s\n", yytext); return KW_ENDDEF; }/**/
-main                    { printf("//Token KEYWORD_MAIN:\t\t\t%s\n", yytext); return KW_MAIN; }/**/
-comp                    { printf("//Token KEYWORD_COMP:\t\t\t%s\n", yytext); return KW_COMP; }/**/
-endcomp                 { printf("//Token KEYWORD_ENDCOMP:\t\t\t%s\n", yytext); return KW_ENDCOMP; }/**/
-and                     { printf("//Token KEYWORD_AND:\t\t\t%s\n", yytext); return KW_AND; }/**/
-or                      { printf("//Token KEYWORD_OR:\t\t\t%s\n", yytext); return KW_OR; }/**/
-not                     { printf("//Token KEYWORD_NOT:\t\t\t%s\n", yytext); return KW_NOT; }/**/
-return                  { printf("//Token KEYWORD_RETURN:\t\t\t%s\n", yytext); return KW_RETURN; }/**/
-True                    { printf("//Token KEYWORD_TRUE:\t\t\t%s\n", yytext); return KW_TRUE; }/**/
-False                   { printf("//Token KEYWORD_FALSE:\t\t\t%s\n", yytext); return KW_FALSE; }/**/
-of                      { printf("//Token KEYWORD_OF:\t\t\t%s\n", yytext); return KW_OF; }/**/
-in                      { printf("//Token KEYWORD_IN:\t\t\t%s\n", yytext); return KW_IN; }/**/
-void                    { printf("//Token KEYWORD_VOID:\t\t\t%s\n", yytext); return KW_VOID; }/**/
+int                     { printf("//Token KEYWORD_INT2:\t\t\t%s\n", yytext); return KW_INT; } /*including both int, integers and str, strings since some programs mix it...*/
+integer                 { printf("//Token KEYWORD_INT:\t\t\t%s\n", yytext); return KW_INT; }
+scalar                  { printf("//Token KEYWORD_SCALAR:\t\t\t%s\n", yytext); return KW_SCALAR; }
+str                     { printf("//Token KEYWORD_STRING:\t\t\t%s\n", yytext); return KW_STR; }
+string                  { printf("//Token KEYWORD_STRING2:\t\t\t%s\n", yytext); return KW_STR; }
+bool                    { printf("//Token KEYWORD_BOOL:\t\t\t%s\n", yytext); return KW_BOOL; }
+const                   { printf("//Token KEYWORD_CONST:\t\t\t%s\n", yytext); return KW_CONST; }
+if                      { printf("//Token KEYWORD_IF:\t\t\t%s\n", yytext); return KW_IF; }
+endif                   { printf("//Token KEYWORD_ENDIF:\t\t\t%s\n", yytext); return KW_ENDIF; }
+else                    { printf("//Token KEYWORD_ELSE:\t\t\t%s\n", yytext); return KW_ELSE; }
+for                     { printf("//Token KEYWORD_FOR:\t\t\t%s\n", yytext); return KW_FOR; }
+endfor                  { printf("//Token KEYWORD_ENDFOR:\t\t\t%s\n", yytext); return KW_ENDFOR; }
+while                   { printf("//Token KEYWORD_WHILE:\t\t\t%s\n", yytext); return KW_WHILE; }
+endwhile                { printf("//Token KEYWORD_ENDWHILE:\t\t\t%s\n", yytext); return KW_ENDWHILE; }
+break                   { printf("//Token KEYWORD_BREAK:\t\t\t%s\n", yytext); return KW_BREAK; }
+continue                { printf("//Token KEYWORD_CONTINUE:\t\t\t%s\n", yytext); return KW_CONTINUE; }
+def                     { printf("//Token KEYWORD_DEF:\t\t\t%s\n", yytext); return KW_DEF; }
+enddef                  { printf("//Token KEYWORD_ENDDEF:\t\t\t%s\n", yytext); return KW_ENDDEF; }
+main                    { printf("//Token KEYWORD_MAIN:\t\t\t%s\n", yytext); return KW_MAIN; }
+comp                    { printf("//Token KEYWORD_COMP:\t\t\t%s\n", yytext); return KW_COMP; }
+endcomp                 { printf("//Token KEYWORD_ENDCOMP:\t\t\t%s\n", yytext); return KW_ENDCOMP; }
+and                     { printf("//Token KEYWORD_AND:\t\t\t%s\n", yytext); return KW_AND; }
+or                      { printf("//Token KEYWORD_OR:\t\t\t%s\n", yytext); return KW_OR; }
+not                     { printf("//Token KEYWORD_NOT:\t\t\t%s\n", yytext); return KW_NOT; }
+return                  { printf("//Token KEYWORD_RETURN:\t\t\t%s\n", yytext); return KW_RETURN; }
+True                    { printf("//Token KEYWORD_TRUE:\t\t\t%s\n", yytext); return KW_TRUE; }
+False                   { printf("//Token KEYWORD_FALSE:\t\t\t%s\n", yytext); return KW_FALSE; }
+of                      { printf("//Token KEYWORD_OF:\t\t\t%s\n", yytext); return KW_OF; }
+in                      { printf("//Token KEYWORD_IN:\t\t\t%s\n", yytext); return KW_IN; }
+void                    { printf("//Token KEYWORD_VOID:\t\t\t%s\n", yytext); return KW_VOID; }
 
 readString              { printf("//Token FN_readStr:\t\t\t%s\n", yytext); return FN_readStr; } /*lambdafuncs*/
 readInteger             { printf("//Token FN_readInteger:\t\t\t%s\n", yytext); return FN_readInteger; }
@@ -108,7 +103,7 @@ write                   { printf("//Token FN_write:\t\t\t%s\n", yytext); return 
 
 "@defmacro" {
     BEGIN(MACRO_DEF);
-    yytext[0] = 0;  // Clear yytext to accumulate the full line
+    yytext[0] = 0;  
 } 
 
 <MACRO_DEF>[^\n]*\n {
