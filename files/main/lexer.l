@@ -59,7 +59,7 @@ DIGIT   [0-9]
 
 NUMBER  {DIGIT}+
 DECIMAL ("."{NUMBER})|({NUMBER}"."{NUMBER}?)
-REAL    {DECIMAL}([eE][+-]?{NUMBER})?
+SCALAR    {DECIMAL}([eE][+-]?{NUMBER})?
 
 SPEC    ("\""|"\\"|"\r"|"\t"|"\n")
 PUNCT   ("-"|"+"|"*"|"/"|":"|"_"|"$"|"!"|"#"|"@"|"~"|"^"|"("|")"|","|"'")
@@ -138,7 +138,7 @@ write                   { printf("//Token FN_write:\t\t\t%s\n", yytext); return 
 }
 
 {NUMBER}                { printf("//Token CONST_INT:\t\t\t%s\n", yytext); yylval.str = strdup(yytext); return CONST_INT; }
-{REAL}                  { printf("//Token CONST_REAL:\t\t\t%s\n", yytext); yylval.str = strdup(yytext); return CONST_REAL; }
+{SCALAR}                  { printf("//Token CONST_SCALAR:\t\t\t%s\n", yytext); yylval.str = strdup(yytext); return CONST_SCALAR; }
 {STRING}                { printf("//Token CONST_STRING:\t\t\t%s\n", yytext); yylval.str = strdup(yytext); return CONST_STRING; }
 
 "+"                     { printf("//Token PLUS_OP:\t\t\t+\n"); return '+'; }
