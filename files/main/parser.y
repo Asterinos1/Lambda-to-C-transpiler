@@ -21,7 +21,7 @@ void replace_string(char *str, const char *old, const char *new);
 
 %token <str> IDENTIFIER
 %token <str> CONST_INT
-%token <str> CONST_REAL
+%token <str> CONST_SCALAR
 %token <str> CONST_STRING
 
 %token FN_readStr
@@ -233,7 +233,7 @@ arr_decl:
 // Expressions 
 expr:
   CONST_INT                         { $$ = $1; }
-| CONST_REAL                        { $$ = $1; }
+| CONST_SCALAR                      { $$ = $1; }
 | CONST_STRING                      { $$ = $1; }
 | IDENTIFIER                        { $$ = $1; }
 | function_call                     { $$ = $1; }
