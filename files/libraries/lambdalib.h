@@ -1,6 +1,6 @@
 // This code was written by Prof. Vasilis Samoladas
-#ifndef KAPPALIB_H
-#define KAPPALIB_H
+#ifndef LAMBDALIB_H
+#define LAMBDALIB_H
 
 #include <math.h>
 #include <stdarg.h>
