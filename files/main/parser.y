@@ -9,7 +9,7 @@
 extern int yylex(void);
 extern int line_num;
 
-// Declare replace_string function
+// Function for := operator
 void replace_string(char *str, const char *old, const char *new);
 
 %}
@@ -95,6 +95,7 @@ void replace_string(char *str, const char *old, const char *new);
 %start program
 
 //declarations
+%type <str> arr_decl arr_decl_list
 %type <str> decl_list decl
 %type <str> const_decl var_decl 
 %type <str> basic_data_type data_type
@@ -116,10 +117,10 @@ void replace_string(char *str, const char *old, const char *new);
 %type <str> smp_stmt cmp_stmt
 %type <str> function_call args
 
-//NEW
-%type <str> arr_decl arr_decl_list
 
 %%
+
+//Complete program declaration
 
 program: 
     decl_list KW_DEF KW_MAIN '(' ')' ':' body KW_ENDDEF';' {
@@ -152,7 +153,7 @@ program:
     }    
 ;
 
-/*====================== Declarations ======================*/
+//Declarations
 
 //Data Types
 data_type:
@@ -160,7 +161,7 @@ data_type:
 | basic_data_type           { $$ = $1; }
 ;
 
-basic_data_type: /*need to include comp*/
+basic_data_type: /*need to include identifer for comp variables*/
   KW_INT      { $$ = template("%s", "int"); }
 | KW_SCALAR   { $$ = template("%s", "double"); }
 | KW_STR      { $$ = template("%s", "char* "); }
@@ -168,7 +169,7 @@ basic_data_type: /*need to include comp*/
 | KW_VOID     { $$ = template("%s", "void"); }
 ;
 
-//Declaration Schema
+//Declaration list
 decl_list: 
   decl_list decl    { $$ = template("%s\n%s", $1, $2); }
 | decl              { $$ = $1; }
@@ -180,8 +181,7 @@ decl:
 | var_decl      { $$ = $1; }
 | func_decl     { $$ = $1; }
 ;
-
-    
+   
 //Constant Declarations
 const_decl:  
     KW_CONST const_identifiers ':' basic_data_type ';' {
@@ -194,7 +194,7 @@ const_identifiers:
 | const_identifiers ',' assign_cmd    { $$ = template("%s, %s", $1, $3); }
 ;
 
-/* Variable Declarations */
+//Variable Declarations
 var_decl:
     var_identifiers ':' data_type ';' {
         $$ = template("%s %s;", $3, $1);
@@ -204,7 +204,7 @@ var_decl:
     }
 ;
 
-/* Identifiers for variables */
+//Identifiers for variables
 var_identifiers:
     IDENTIFIER {
         $$ = $1;
@@ -214,7 +214,7 @@ var_identifiers:
     }
 ;
 
-/* Array Declarations */
+//Array Declarations
 arr_decl_list:
     arr_decl {
         $$ = $1;
@@ -230,9 +230,7 @@ arr_decl:
     }
 ;
 
-
-/*====================== Expressions ======================*/
-
+// Expressions 
 expr:
   CONST_INT                         { $$ = $1; }
 | CONST_REAL                        { $$ = $1; }
@@ -242,9 +240,9 @@ expr:
 | la_func                           { $$ = $1; }
 | KW_TRUE                           { $$ = "1"; }
 | KW_FALSE                          { $$ = "0"; }
-| '(' expr ')'                      { $$ = template("(%s)",  $2); }
-| '+' expr %prec SIGN_PLUS          { $$ = template("+%s",  $2); }
-| '-' expr %prec SIGN_MINUS         { $$ = template("-%s",  $2); } 
+| '(' expr ')'                      { $$ = template("(%s)",  $2); }  
+| '+' expr %prec SIGN_PLUS          { $$ = template("+%s",  $2); } //Although SIGN_PLUS and SIGN_MINUS are not provided by the lexer,s
+| '-' expr %prec SIGN_MINUS         { $$ = template("-%s",  $2); } // their role here is to distinguish between signed numbers and arithmetic operations
 | expr KW_AND expr                  { $$ = template("%s && %s", $1, $3); } 
 | expr KW_OR expr                   { $$ = template("%s || %s", $1, $3); } 
 | KW_NOT expr                       { $$ = template("!%s", $2); }
@@ -264,7 +262,7 @@ expr:
 | IDENTIFIER '[' IDENTIFIER ']'     { $$ = template("%s[%s]", $1, $3); }
 ;
 
-/*====================== Functions ======================*/
+//Functions
 func_decl:
   KW_DEF IDENTIFIER '(' params ')' func_data_type ':' body KW_ENDDEF';'{ $$ = template("\n%s %s(%s) {\n%s\n}\n", $6, $2, $4, $8);}
 ;
@@ -291,8 +289,7 @@ body:
 | body const_decl   { $$ = template("%s\n%s", $1, $2); }
 ;
 
-/*====================== Statements ======================*/
-
+//Statements 
 //General
 smp_stmt:
   assign_cmd ';'        { $$ = template("%s;", $1); }
@@ -310,7 +307,6 @@ smp_stmt:
 | if_stmt ';'           { $$ = template("%s", $1); }
 ;
 
-
 cmp_stmt:
   cmp_stmt  smp_stmt    { $$ = template("%s\n%s", $1, $2); }
 | smp_stmt              { $$ = $1; }
@@ -319,8 +315,6 @@ cmp_stmt:
 | cmp_stmt  const_decl  { $$ = template("%s\n%s", $1, $2); }
 | const_decl            { $$ = $1; }
 ;
-
-
 
 //Assignment
 assign_cmd:
@@ -342,7 +336,7 @@ assign_cmd:
 | IDENTIFIER OP5 expr { $$ = template("%s *= %s", $1, $3); }
 | IDENTIFIER '[' CONST_INT ']' OP5  expr { $$ = template("%s[%s] *= %s", $1, $3, $6); }
 | IDENTIFIER '[' IDENTIFIER ']' OP5  expr { $$ = template("%s[%s] *= %s", $1, $3, $6); }
-
+// := operator part
 | IDENTIFIER OP6 '[' expr KW_FOR IDENTIFIER ':' expr ']' ':' data_type {
   $$ = template("%s* %s = (%s*)malloc(%s * sizeof(%s));\nfor (int %s = 0; %s < %s; ++%s) {\n%s[%s] = %s;\n}",
                 $11, $1, $11, $8, $11, $6, $6, $8, $6, $1, $6, $4);
@@ -370,7 +364,7 @@ la_func:
 | FN_write '(' expr ')'   { $$ = template("write(%s)", $3); }
 ;
 
-//Call own functions
+//Call user made functions
 function_call:
     IDENTIFIER '(' args ')' { $$ = template("%s(%s)", $1, $3); }
 ;
@@ -383,20 +377,8 @@ args:
 
 //While statement
 while_stmt:
- // KW_WHILE '(' expr ')' ':' smp_stmt KW_ENDWHILE';'     { $$ = template("while (%s)\n\t%s", $3, $6); }
- KW_WHILE '(' expr ')' ':' smp_stmt  KW_ENDWHILE';'    { $$ = template("while (%s) {\n%s\n}\n", $3, $6); }
-| KW_WHILE '(' expr ')' ':' cmp_stmt  KW_ENDWHILE';'    { $$ = template("while (%s) {\n%s\n}\n", $3, $6); }
+  KW_WHILE '(' expr ')' ':' cmp_stmt  KW_ENDWHILE';'    { $$ = template("while (%s) {\n%s\n}\n", $3, $6); }
 ;
-
-//If-else statement
-/* if_stmt:
-  KW_IF '(' expr ')' ':' smp_stmt KW_ENDIF ';'   { $$ = template("if (%s)\n\t%s\n", $3, $6); }
-| KW_IF '(' expr ')' smp_stmt KW_ELSE smp_stmt KW_ENDIF ';' { $$ = template("if (%s)\n\t%s\nelse\n\t%s\n", $3, $5, $7); }
-| KW_IF '(' expr ')' smp_stmt KW_ELSE '{' cmp_stmt '}' { $$ = template("if (%s)\n\t%s\nelse {\n%s\n}\n", $3, $5, $8); }
-| KW_IF '(' expr ')' '{' cmp_stmt '}'       { $$ = template("if (%s) {\n%s\n}\n", $3, $6); }
-| KW_IF '(' expr ')' '{' cmp_stmt '}' KW_ELSE smp_stmt  { $$ = template("if (%s) {\n%s\n}\nelse\n\t%s\n", $3, $6, $9); }
-| KW_IF '(' expr ')' '{' cmp_stmt '}' KW_ELSE '{' cmp_stmt '}'  { $$ = template("if (%s) {\n%s\n}\nelse {\n%s\n}\n", $3, $6, $10); }
-; */
 
 //If-else statement
 if_stmt:
@@ -404,25 +386,16 @@ if_stmt:
 | KW_IF '(' expr ')' ':' cmp_stmt  KW_ELSE ':' cmp_stmt KW_ENDIF ';'   { $$ = template("if (%s) {\n%s\n}\nelse {\n%s\n}\n", $3, $6, $9); }
 ;
 
-
-//For statement
-/* for_stmt:
-  KW_FOR '(' assign_cmd ';' expr ';' assign_cmd ')' smp_stmt KW_ENDFOR';'{ $$ = template("for (%s; %s; %s)\n\t%s\n", $3, $5, $7, $9); }
-| KW_FOR '(' assign_cmd ';' ';' assign_cmd ')' smp_stmt KW_ENDFOR ';'{ $$ = template("for (%s; ; %s)\n\t%s\n", $3, $6, $8); }
-| KW_FOR '(' assign_cmd ';' expr ';' assign_cmd ')' '{' cmp_stmt KW_ENDFOR';' { $$ = template("for (%s; %s; %s) {\n%s\n}\n", $3, $5, $7, $10); }
-| KW_FOR '(' assign_cmd ';' ';' assign_cmd ')' '{' cmp_stmt KW_ENDFOR ';' { $$ = template("for (%s; ; %s) {\n%s\n}\n", $3, $6, $9); }
-; */
-
 for_stmt:
   KW_FOR IDENTIFIER KW_IN '[' expr ':' expr ']' ':' cmp_stmt KW_ENDFOR ';' { $$ = template("for (int %s = %s; %s <= %s; %s++) {\n%s\n}", $2, $5, $2, $7, $2, $10); }
 | KW_FOR IDENTIFIER KW_IN '[' expr ':' expr ':' expr ']' ':' cmp_stmt KW_ENDFOR ';' { $$ = template("for (int %s = %s; %s <= %s; %s += %s) {\n%s\n}", $2, $5, $2, $7, $2, $9, $12); }
-| KW_FOR IDENTIFIER KW_IN '[' expr ':' expr ']' ':' smp_stmt KW_ENDFOR ';' { $$ = template("for (int %s = %s; %s <= %s; %s++) {\n%s\n}", $2, $5, $2, $7, $2, $10); }
-| KW_FOR IDENTIFIER KW_IN '[' expr ':' expr ':' expr ']' ':' smp_stmt KW_ENDFOR ';' { $$ = template("for (int %s = %s; %s <= %s; %s += %s) {\n%s\n}", $2, $5, $2, $7, $2, $9, $12);}
 ;
 
 %%
+
 // Implementation of replace_string function
 void replace_string(char *str, const char *old, const char *new) {
+
     char buffer[1024];
     char *p;
 
@@ -435,7 +408,6 @@ void replace_string(char *str, const char *old, const char *new) {
 
     strcpy(str, buffer);
 }
-
 
 int main () {
   if ( yyparse() != 0 ){
