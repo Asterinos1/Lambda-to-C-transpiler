@@ -1,5 +1,7 @@
 # Lambda-to-C transpiler (2024) Theory of Computation
 
+- A transpiler that converts an imaginary language 'lambda' into executable C source code. 
+
 ## Current build
 - The current build works perfectly without conflicts/shift reduce warnings.
 - The **comp** structure is not implemented (yet).
