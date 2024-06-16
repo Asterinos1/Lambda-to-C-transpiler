@@ -1,8 +1,8 @@
 # Lambda-to-C transpiler (2024) Theory of Computation
 
 ## Current build
-- The current works perfectly without conflicts/shift reduce
-- The *comp* structure is not implemented (yet).
+- The current build works perfectly without conflicts/shift reduce warnings.
+- The **comp** structure is not implemented (yet).
 
 ## How to Set Up
 
