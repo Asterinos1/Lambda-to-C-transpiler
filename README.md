@@ -49,6 +49,4 @@ To test the compiler with an input file, follow these steps:
 ## Additional Information
 
 - Make sure you have the necessary build tools installed (e.g., `flex`, `bison`, `gcc`).
-
-
-For any questions or support, please contact [Your Name] at [your.email@example.com].
+- This transpiler only checks for correct syntax. It doesn't check for further code clarity and will transfer mistakes to the output C code.
