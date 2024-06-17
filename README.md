@@ -3,7 +3,7 @@
 - A transpiler that converts an imaginary language 'lambda' into executable C source code. 
 
 ## Current build
-- The current build works perfectly without conflicts/shift reduce warnings.
+- The current build works perfectly without conflicts/shift reduce warnings. (except for 1, look at commit message)
 - The **comp** structure is not implemented (yet).
 
 ## How to Set Up
