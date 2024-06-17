@@ -167,11 +167,9 @@ write                   { printf("//Token FN_write:\t\t\t%s\n", yytext); return 
 "]"                     { printf("//Token RIGHT_BRACKET:\t\t]\n"); return ']'; }
 ":"                     { printf("//Token COLON:\t\t\t:\n"); return ':'; }
 "."                     { printf("//Token PERIOD:\t\t\t.\n"); return '.'; }
+"#"                     { printf("//Token DIESI:\t\t\tdiesi\n"); return '#'; } 
 
-"#"                     { printf("//Token DIESI:\t\t\tdiesi\n"); return '#'; } /*NEW*/
-
-"--"[^\n]*              /* eat line comments */
-
+"--"[^\n]*              /* line comment */
 <<EOF>>                 { free_macros(); return EOF; }
 
 [ \r\t]+                /* skip whitespace */
