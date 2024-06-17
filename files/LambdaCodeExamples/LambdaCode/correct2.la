@@ -1,1 +1,57 @@
+def binarySearch(arr[]: integer, size: integer, x: integer) -> integer:
+    l, r, mid: integer;
+    l = 0;
+    r = size - 1;
 
+    while (l <= r):
+        mid = l + (r - l) / 2;
+        if (arr[mid] == x):
+            return mid;
+        endif;
+        if (arr[mid] < x):
+            l = mid + 1;
+        else:
+            r = mid - 1;
+        endif;
+    endwhile;
+
+    return -1;  -- Element not present
+enddef;
+
+def printArray(arr[]: integer, size: integer):
+    for i in [0: size - 1]:
+        writeInteger(arr[i]);
+        if (i != size - 1):
+            writeStr(", ");
+        endif;
+    endfor;
+    writeStr("\n");
+enddef;
+
+def main():
+    const arrSize = 5: integer;
+    arr[arrSize]: integer;
+    arr[0] = 2;
+    arr[1] = 3;
+    arr[2] = 4;
+    arr[3] = 10;
+    arr[4] = 40;
+
+    writeStr("Array: ");
+    printArray(arr, arrSize);
+
+    writeStr("Enter element to search: ");
+    x:integer;
+    x = readInteger();
+    
+    result: integer;
+    result = binarySearch(arr, arrSize, x);
+    
+    if (result != -1):
+        writeStr("Element found at index ");
+        writeInteger(result);
+        writeStr("\n");
+    else:
+        writeStr("Element not found in array\n");
+    endif;
+enddef;
