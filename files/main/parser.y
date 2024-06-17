@@ -19,7 +19,7 @@ void replace_string(char *str, const char *old, const char *new);
     char* str;
 }
 
-%token <str> IDENTIFIER
+%left <str> IDENTIFIER
 %token <str> CONST_INT
 %token <str> CONST_SCALAR
 %token <str> CONST_STRING
@@ -195,6 +195,8 @@ var_identifiers:
 | var_identifiers ',' IDENTIFIER {
         $$ = template("%s, %s", $1, $3);
     }
+| assign_cmd  {$$=$1;}
+| var_identifiers ',' assign_cmd { $$ = template("%s, %s", $1, $3); }
 ;
 
 //Array Declarations
@@ -211,6 +213,10 @@ arr_decl:
     IDENTIFIER '[' CONST_INT ']' {
         $$ = template("%s[%s]", $1, $3);
     }
+
+| IDENTIFIER '[' IDENTIFIER ']'{
+  $$ = template("%s[%s]", $1, $3); 
+}    
 ;
 
 // Expressions 
@@ -243,6 +249,7 @@ expr:
 | expr NEQ_OP expr                  { $$ = template("%s != %s", $1, $3); }
 | IDENTIFIER '[' CONST_INT ']'      { $$ = template("%s[%s]", $1, $3); }
 | IDENTIFIER '[' IDENTIFIER ']'     { $$ = template("%s[%s]", $1, $3); }
+| IDENTIFIER '[' expr']'            { $$ = template("%s[%s]", $1, $3); }
 ;
 
 //Functions
