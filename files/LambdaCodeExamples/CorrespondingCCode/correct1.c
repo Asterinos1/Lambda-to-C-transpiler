@@ -823,6 +823,36 @@
 // Token SEMICOLON:			;
 // Token KEYWORD_ENDIF:			endif
 // Token SEMICOLON:			;
+// Token IDENTIFIER:			newArr
+// Token OP6:				:=
+// Token LEFT_BRACKET:		[
+// Token IDENTIFIER:			i
+// Token MULTIPLY_OP:			*
+// Token CONST_INT:			10
+// Token KEYWORD_FOR:			for
+// Token IDENTIFIER:			i
+// Token COLON:			:
+// Token KEYWORD_INT:			integer
+// Token KEYWORD_IN:			in
+// Token IDENTIFIER:			arr
+// Token KEYWORD_OF:			of
+// Token IDENTIFIER:			arrSize
+// Token RIGHT_BRACKET:		]
+// Token COLON:			:
+// Token KEYWORD_INT:			integer
+// Token SEMICOLON:			;
+// Token IDENTIFIER:			writeStr
+// Token LEFT_PARENTHESIS:		(
+// Token CONST_STRING:			"New array with elements multiplied by 10: "
+// Token RIGHT_PARENTHESIS:		)
+// Token SEMICOLON:			;
+// Token IDENTIFIER:			printArray
+// Token LEFT_PARENTHESIS:		(
+// Token IDENTIFIER:			newArr
+// Token COMMA:			,
+// Token IDENTIFIER:			arrSize
+// Token RIGHT_PARENTHESIS:		)
+// Token SEMICOLON:			;
 // Token KEYWORD_ENDDEF:			enddef
 // Token SEMICOLON:			;
 /* program */
@@ -993,6 +1023,14 @@ int main()
     {
         writeStr("Element not found in array\n");
     }
+
+    int *newArr = (int *)malloc(arrSize * sizeof(int));
+    for (int arr_i = 0; arr_i < arrSize; ++arr_i)
+    {
+        newArr[arr_i] = arr[arr_i] * 10;
+    };
+    writeStr("New array with elements multiplied by 10: ");
+    printArray(newArr, arrSize);
 }
 
 /* Your program is syntactically correct! */
