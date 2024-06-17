@@ -9,8 +9,8 @@
 ## How to Set Up
 
 1. **Download all necessary files**:
-    - `lexer.l`
-    - `parser.y`
+    - `mylexer.l`
+    - `myanalyzer.y`
     - `cgen.c`
     - `cgen.h`
     - `lambdalib.h`
