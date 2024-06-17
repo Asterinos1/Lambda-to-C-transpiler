@@ -49,7 +49,7 @@ void replace_string(char *str, const char *old, const char *new);
 %token KW_DEF
 %token KW_ENDDEF
 %token KW_MAIN
-%token KW_COMP
+%token KW_COMP   
 %token KW_ENDCOMP
 %token KW_AND
 %token KW_OR
@@ -59,37 +59,23 @@ void replace_string(char *str, const char *old, const char *new);
 %token KW_FALSE
 %token KW_OF
 %token KW_IN
-
 %token KW_VOID
 
-%token OP1
-%token OP2
-%token OP3
-%token OP4
-%token OP5
-%token OP6
-%token EQ_OP
-%token NEQ_OP
-%token LE_OP
-%token GE_OP
-
-%right ASSIGN
-
+%right ASSIGN OP1 OP2 OP3 OP4 OP5 OP6
 %left '+' '-'
 %left '/' '*' '%' 
 %right POW_OP
-%left KW_AND KW_OR
-
+%left KW_AND
+%left KW_OR
 %left '(' ')'
 %left '[' ']'
 %left ','
 %token ';'
 %token ':'
 %token '.'
-%left '<' '>' EQ_OP NEQ_OP LE_OP GE_OP
-
-%right SIGN_PLUS
-%right SIGN_MINUS
+%left '<' '>' LE_OP GE_OP
+%left EQ_OP NEQ_OP
+%right SIGN_PLUS SIGN_MINUS
 %right KW_NOT
 
 %start program
@@ -100,14 +86,11 @@ void replace_string(char *str, const char *old, const char *new);
 %type <str> const_decl var_decl 
 %type <str> basic_data_type data_type
 %type <str> var_identifiers const_identifiers
-
 //expressions
 %type <str> expr
-
 //functions
 %type <str> func_decl func_data_type params
 %type <str> body
-
 //statements
 %type <str> assign_cmd
 %type <str> if_stmt
@@ -375,20 +358,22 @@ args:
 | args ',' expr     { $$ = template("%s, %s", $1, $3); }
 ;
 
-//While statement
-while_stmt:
-  KW_WHILE '(' expr ')' ':' cmp_stmt  KW_ENDWHILE';'    { $$ = template("while (%s) {\n%s\n}\n", $3, $6); }
-;
-
 //If-else statement
 if_stmt:
   KW_IF '(' expr ')' ':' cmp_stmt KW_ENDIF ';'       { $$ = template("if (%s) {\n%s\n}\n", $3, $6); }
 | KW_IF '(' expr ')' ':' cmp_stmt  KW_ELSE ':' cmp_stmt KW_ENDIF ';'   { $$ = template("if (%s) {\n%s\n}\nelse {\n%s\n}\n", $3, $6, $9); }
 ;
 
+
+//For statement
 for_stmt:
   KW_FOR IDENTIFIER KW_IN '[' expr ':' expr ']' ':' cmp_stmt KW_ENDFOR ';' { $$ = template("for (int %s = %s; %s <= %s; %s++) {\n%s\n}", $2, $5, $2, $7, $2, $10); }
 | KW_FOR IDENTIFIER KW_IN '[' expr ':' expr ':' expr ']' ':' cmp_stmt KW_ENDFOR ';' { $$ = template("for (int %s = %s; %s <= %s; %s += %s) {\n%s\n}", $2, $5, $2, $7, $2, $9, $12); }
+;
+
+//While statement
+while_stmt:
+  KW_WHILE '(' expr ')' ':' cmp_stmt  KW_ENDWHILE';'    { $$ = template("while (%s) {\n%s\n}\n", $3, $6); }
 ;
 
 %%
@@ -411,7 +396,7 @@ void replace_string(char *str, const char *old, const char *new) {
 
 int main () {
   if ( yyparse() != 0 ){
-    printf("\nSyntax error\n");
+    printf("\nLine %d: Syntax error!\n", line_num);
   }else{
     printf("\n/* Your program is syntactically correct! */\n");
   }
