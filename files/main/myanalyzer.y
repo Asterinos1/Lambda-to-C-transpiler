@@ -100,7 +100,6 @@ void replace_string(char *str, const char *old, const char *new);
 %type <str> smp_stmt cmp_stmt
 %type <str> function_call args
 
-
 %%
 
 //Complete program declaration
