@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # List of files to remove
-files=("parser.tab.c" "parser.tab.h" "lex.yy.c" "mycomp" "parser.output")
+files=("myanalyzer.tab.c" "myanalyzer.tab.h" "lex.yy.c" "mycomp" "myanalyzer.output")
 
 # Loop through the files and remove each one
 for file in "${files[@]}"; do
@@ -22,21 +22,21 @@ echo "Cleanup completed successfully."
 echo "Starting the build script..."
 
 # Run Flex
-flex lexer.l
+flex mylexer.l
 if [ $? -ne 0 ]; then
     echo "Flex failed"
     exit 1
 fi
 
 # Run Bison
-bison -d -v -r all parser.y
+bison -d -v -r all myanalyzer.y
 if [ $? -ne 0 ]; then
     echo "Bison failed"
     exit 1
 fi
 
 # Compile and link using GCC
-gcc -o mycomp lex.yy.c parser.tab.c cgen.c -lfl
+gcc -o mycomp lex.yy.c myanalyzer.tab.c cgen.c -lfl
 if [ $? -ne 0 ]; then
     echo "GCC failed"
     exit 1
