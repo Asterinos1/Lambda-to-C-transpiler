@@ -1,0 +1,144 @@
+@defmacro SIZE 10
+
+const MAX_INT = 2147483647: integer;
+
+def swap(arr[]: integer, i: integer, j: integer):
+    temp: integer;
+    temp = arr[i];
+    arr[i] = arr[j];
+    arr[j] = temp;
+enddef;
+
+def bubbleSort(arr[]: integer, size: integer):
+    n, i, j: integer;
+    n = size;
+    
+    for i in [0: n - 1]:
+        for j in [0: n-i-1]:
+            if (arr[j] > arr[j + 1]):
+                swap(arr, j, j + 1);
+            endif;
+        endfor;
+    endfor;
+enddef;
+
+def merge(arr[]: integer, l: integer, m: integer, r: integer):
+    n1, n2, i, j, k: integer;
+    n1 = m - l + 1;
+    n2 = r - m;
+
+    L[n1]: integer;
+    R[n2]: integer;
+
+    for i in [0: n1 - 1]:
+        L[i] = arr[l + i];
+    endfor;
+    for j in [0: n2 - 1]:
+        R[j] = arr[m + 1 + j];
+    endfor;
+
+    i = 0;
+    j = 0;
+    k = l;
+    
+    while (i < n1 and j < n2):
+        if (L[i] <= R[j]):
+            arr[k] = L[i];
+            i = i + 1;
+        else:
+            arr[k] = R[j];
+            j = j + 1;
+        endif;
+        k = k + 1;
+    endwhile;
+
+    while (i < n1):
+        arr[k] = L[i];
+        i = i + 1;
+        k = k + 1;
+    endwhile;
+    while (j < n2):
+        arr[k] = R[j];
+        j = j + 1;
+        k = k + 1;
+    endwhile;
+enddef;
+
+def mergeSort(arr[]: integer, l: integer, r: integer):
+   m:integer;
+    if (l < r):
+        m = l + (r - l) / 2;
+        mergeSort(arr, l, m);
+        mergeSort(arr, m + 1, r);
+        merge(arr, l, m, r);
+    endif;
+enddef;
+
+def binarySearch(arr[]: integer, size: integer, x: integer) -> integer:
+    l, r, mid: integer;
+    l = 0;
+    r = size - 1;
+
+    while (l <= r):
+        mid = l + (r - l) / 2;
+        if (arr[mid] == x):
+            return mid;
+        endif;
+        if (arr[mid] < x):
+            l = mid + 1;
+        else:
+            r = mid - 1;
+        endif;
+    endwhile;
+
+    return -1;  -- Element not present
+enddef;
+
+def printArray(arr[]: integer, size: integer):
+    for i in [0: size - 1]:
+        writeInteger(arr[i]);
+        if (i != size - 1):
+            writeStr(", ");
+        endif;
+    endfor;
+    writeStr("\n");
+enddef;
+
+def main():
+    const arrSize = SIZE: integer;
+    arr[arrSize]: integer;
+    arr[0] = 45;
+    arr[1] = 23;
+    arr[2] = 78;
+    arr[3] = 89;
+    arr[4] = 12;
+    arr[5] = 90;
+    arr[6] = 34;
+    arr[7] = 56;
+    arr[8] = 19;
+    arr[9] = 67;
+
+    writeStr("Unsorted array: ");
+    printArray(arr, arrSize);
+
+    -- Sorting array using merge sort
+    mergeSort(arr, 0, arrSize - 1);
+
+    writeStr("Sorted array: ");
+    printArray(arr, arrSize);
+
+    writeStr("Enter element to search: ");
+    x:integer;
+    x = readInteger();
+
+    result: integer;
+    result = binarySearch(arr, arrSize, x);
+
+    if (result != -1):
+        writeStr("Element found at index ");
+        writeInteger(result);
+        writeStr("\n");
+    else:
+        writeStr("Element not found in array\n");
+    endif;
+enddef;
