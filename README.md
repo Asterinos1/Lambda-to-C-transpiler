@@ -21,7 +21,10 @@
     - Navigate to the directory containing the downloaded files.
     - Run the build script with the following command:
       ```bash
-      chmod +x build.sh  ./build.sh
+      chmod +x build.sh
+      ```
+      ```bash
+      ./build.sh
       ```
     - This script will automatically create the compiler named `mycomp`.
 
