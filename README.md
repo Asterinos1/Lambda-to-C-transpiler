@@ -5,7 +5,7 @@
 ## Current build
 - The current build works perfectly without conflicts/shift reduce warnings. (except for 1, look at commit message)
 - The **comp** structure is not implemented.
-- Grade: 9/10
+- Final Grade: 9/10
 
 ## How to Set Up
 
