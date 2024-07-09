@@ -288,9 +288,6 @@ smp_stmt:
 | KW_RETURN expr ';'    { $$ = template("return %s;", $2); }
 | la_func ';'           { $$ = template("%s;", $1); }
 | function_call ';'     { $$ = template("%s;", $1); }
-| for_stmt              { $$ = template("%s", $1); }
-| while_stmt            { $$ = template("%s", $1); }
-| if_stmt               { $$ = template("%s", $1); }
 | for_stmt ';'          { $$ = template("%s", $1); }
 | while_stmt ';'        { $$ = template("%s", $1); }
 | if_stmt ';'           { $$ = template("%s", $1); }
