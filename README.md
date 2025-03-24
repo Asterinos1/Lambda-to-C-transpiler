@@ -29,7 +29,7 @@
       ```
     - This script will automatically create the compiler named `mycomp`.
 
-## How to Test a File
+## How to test a file
 
 To test the compiler with an input file, follow these steps:
 
